@@ -32,8 +32,8 @@ def run():
     # 1. Prepare the data
     house_size, house_price = __generate_data()
     # __visualise_data(house_size, house_price)
-    train_house_size, train_house_price = __get_training_data(house_size, house_price)
-    test_house_size, test_house_price = __get_test_data(house_size, house_price)
+    train_size, train_size_norm, train_price, train_price_norm = __get_training_data(house_size, house_price)
+    test_size, test_size_norm, test_price, test_price_norm = __get_test_data(house_size, house_price)
 
     # 2. Define the operation for predicting the values
     tf_house_size, tf_price = __configure_placeholders()
@@ -67,13 +67,13 @@ def run():
         for iteration in range(NUM_TRAINING_ITERATIONS):
 
             # Fit all training data
-            for (x, y) in zip(train_house_size, train_house_price):
+            for (x, y) in zip(train_size_norm, train_price_norm):
                 sess.run(optimizer, feed_dict={tf_house_size: x, tf_price: y})
 
 #region status + visuals
             # Display current status
             if (iteration + 1) % DISPLAY_EVERY_X_ITERATION == 0:
-                c = sess.run(tf_cost_fn, feed_dict={tf_house_size: train_house_size, tf_price:train_house_price})
+                c = sess.run(tf_cost_fn, feed_dict={tf_house_size: train_size_norm, tf_price:train_price_norm})
                 print("iteration #:", '%04d' % (iteration + 1), "cost=", "{:.9f}".format(c), \
                     "size_factor=", sess.run(tf_size_factor), "price_offset=", sess.run(tf_price_offset))
 
@@ -84,59 +84,68 @@ def run():
 #endregion
 
         print("Optimization Finished!")
-        training_cost = sess.run(tf_cost_fn, feed_dict={tf_house_size: train_house_size, tf_price: train_house_price})
+        training_cost = sess.run(tf_cost_fn, feed_dict={tf_house_size: train_size_norm, tf_price: train_price_norm})
         print("Trained cost=", training_cost, "size_factor=", sess.run(tf_size_factor), "price_offset=", sess.run(tf_price_offset), '\n')
 
 #region visuals
         # Plot of training and test data, and learned regression
         
         # get values used to normalized data so we can denormalize data back to its original scale
-        train_house_size_mean = train_house_size.mean()
-        train_house_size_std = train_house_size.std()
+        train_house_size_mean = train_size.mean()
+        train_house_size_std = train_size.std()
 
-        train_price_mean = train_house_price.mean()
-        train_price_std = train_house_price.std()
+        train_price_mean = train_price.mean()
+        train_price_std = train_price.std()
 
         # Plot the graph
-        plt.rcParams["figure.figsize"] = (10,8)
-        plt.figure()
-        plt.ylabel("Price")
-        plt.xlabel("Size (sq.ft)")
-        plt.plot(train_house_size, train_house_price, 'go', label='Training data')
-        plt.plot(test_house_size, test_house_price, 'mo', label='Testing data')
-        plt.plot(train_house_size * train_house_size_std + train_house_size_mean,
-                (sess.run(tf_size_factor) * train_house_size + sess.run(tf_price_offset)) * train_price_std + train_price_mean,
-                label='Learned Regression')
-    
-        plt.legend(loc='upper left')
-        plt.show()
+        def show_model_on_graph():
+            plt.rcParams["figure.figsize"] = (10,8)
+            plt.figure()
+            plt.ylabel("Price")
+            plt.xlabel("Size (sq.ft)")
+            plt.plot(train_size, train_price, 'go', label='Training data')
+            plt.plot(test_size, test_price, 'mo', label='Testing data')
+            plt.plot(train_size_norm * train_house_size_std + train_house_size_mean,
+                    (sess.run(tf_size_factor) * train_size_norm + sess.run(tf_price_offset)) * train_price_std + train_price_mean,
+                    label='Learned Regression')
+        
+            plt.legend(loc='upper left')
+            plt.show()
 
-        # Plot another graph that animation of how Gradient Descent sequentually adjusted size_factor and price_offset to 
-        # find the values that returned the "best" fit line.
-        fig, ax = plt.subplots()
-        line, = ax.plot(house_size, house_price)
+        # show_model_on_graph()
 
-        plt.rcParams["figure.figsize"] = (10,8)
-        plt.title("Gradient Descent Fitting Regression Line")
-        plt.ylabel("Price")
-        plt.xlabel("Size (sq.ft)")
-        plt.plot(train_house_size, train_house_price, 'go', label='Training data')
-        plt.plot(test_house_size, test_house_price, 'mo', label='Testing data')
+        def animate_gradient_descent_on_graph():
+            # Plot another graph that animation of how Gradient Descent sequentually adjusted size_factor and price_offset to 
+            # find the values that returned the "best" fit line.
+            fig, ax = plt.subplots()
+            line, = ax.plot(house_size, house_price)
+            # BUG: All points are being plotted with lines connecting them
 
-        def animate(i):
-            line.set_xdata(train_house_size * train_house_size_std + train_house_size_mean)  # update the data
-            line.set_ydata((fit_size_factor[i] * train_house_size + fit_price_offsets[i]) * train_price_std + train_price_mean)  # update the data
-            return line,
-    
-        # Init only required for blitting to give a clean slate.
-        def initAnim():
-            line.set_ydata(np.zeros(shape=house_price.shape[0])) # set y's to 0
-            return line,
+            plt.rcParams["figure.figsize"] = (10,8)
+            plt.title("Gradient Descent Fitting Regression Line")
+            plt.ylabel("Price")
+            plt.xlabel("Size (sq.ft)")
+            plt.plot(train_size, train_price, 'go', label='Training data')
+            plt.plot(test_size, test_price, 'mo', label='Testing data')
 
-        ani = animation.FuncAnimation(fig, animate, frames=np.arange(0, fit_plot_idx), init_func=initAnim,
-                                    interval=1000, blit=True)
+            def animate(i):
+                # line.linestyle = '-'
+                line.set_xdata(train_size_norm * train_house_size_std + train_house_size_mean)  # update the data
+                line.set_ydata((fit_size_factor[i] * train_size_norm + fit_price_offsets[i]) * train_price_std + train_price_mean)  # update the data
+                return line,
+        
+            # Init only required for blitting to give a clean slate.
+            def initAnim():
+                line.set_ydata(np.zeros(shape=house_price.shape[0])) # set y's to 0
+                return line,
 
-        plt.show()   
+            ani = animation.FuncAnimation(fig, animate, frames=np.arange(0, fit_plot_idx), init_func=initAnim,
+                                        interval=1000, blit=True)
+
+            plt.show()  
+
+        animate_gradient_descent_on_graph()
+         
 #endregion
 
 #endregion
@@ -164,23 +173,23 @@ def __visualise_data(house_size, house_price):
 
 
 def __get_training_data(house_size, house_price):
-    train_house_size = np.asarray(house_size[:NUM_TRAINING_SAMPLES])
+    train_size = np.asarray(house_size[:NUM_TRAINING_SAMPLES])
     train_price = np.asanyarray(house_price[:NUM_TRAINING_SAMPLES:])
 
-    train_house_size_norm = __normalize(train_house_size)
+    train_size_norm = __normalize(train_size)
     train_price_norm = __normalize(train_price)
 
-    return train_house_size_norm, train_price_norm
+    return train_size, train_size_norm, train_price, train_price_norm
 
 
 def __get_test_data(house_size, house_price):
-    test_house_size = np.array(house_size[NUM_TRAINING_SAMPLES:])
-    test_house_price = np.array(house_price[NUM_TRAINING_SAMPLES:])
+    test_size = np.array(house_size[NUM_TRAINING_SAMPLES:])
+    test_price = np.array(house_price[NUM_TRAINING_SAMPLES:])
 
-    test_house_size_norm = __normalize(test_house_size)
-    test_house_price_norm = __normalize(test_house_price)
+    test_size_norm = __normalize(test_size)
+    test_price_norm = __normalize(test_price)
 
-    return test_house_size_norm, test_house_price_norm
+    return test_size, test_size_norm, test_price, test_price_norm
 #endregion
 
 #region TF methods
@@ -239,4 +248,7 @@ NOTES:
    as well as they can to fit the available data
 3. The low cost value means we are fitting the data well
 4. The first graph shows the trained model and how well it fits the data
+
+BUGS:
+- All the sample dots are being joined up by lines. This shouldn't be the case.
 '''
