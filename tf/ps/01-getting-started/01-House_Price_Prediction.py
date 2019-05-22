@@ -112,7 +112,7 @@ def run():
             plt.legend(loc='upper left')
             plt.show()
 
-        # show_model_on_graph()
+        show_model_on_graph()
 
         def animate_gradient_descent_on_graph():
             # Plot another graph that animation of how Gradient Descent sequentually adjusted size_factor and price_offset to 
