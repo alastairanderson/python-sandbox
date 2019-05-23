@@ -3,21 +3,32 @@ import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 #endregion
 
+'''
+This implements a neural network with no hidden layers,
+So we have one neuron which takes the inputs,
+matrix multiplies the weights, adds the bias and
+pushes it through a softmax activation function
+'''
+
 #region public methods
 def run():
-    mnist = get_mnist_data()
+    # this is a helper function built into TF and not the traditional way data is fed into TF
+    mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
 
-    x, y_ = __configure_placeholders()
-    W, b = __configure_weights_and_bias()
+    # Placeholder for 28 X 28 (=784) image data
+    x = tf.placeholder(tf.float32, shape=[None, 784])
 
-    # define weights and bias
+    # stores the predicted digit(0-9) class in one-hot encoded format. e.g. [0,1,0,0,0,0,0,0,0,0] for 1, [0,0,0,0,0,0,0,0,0,1] for 9
+    y_ = tf.placeholder(tf.float32, [None, 10])
+
+    # define weights and bias - these are what we update/train when optimising
     W = tf.Variable(tf.zeros([784, 10]))
     b = tf.Variable(tf.zeros([10]))
 
-    # define our inference model
+    # define our inference model that will perform the prediction
     y = tf.nn.softmax(tf.matmul(x, W) + b)
 
-    # loss is cross entropy
+    # loss is cross entropy - https://www.tensorflow.org/api_docs/python/tf/nn/softmax_cross_entropy_with_logits
     cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=y))
 
     # each training step in gradient decent we want to minimize cross entropy
@@ -47,31 +58,6 @@ def run():
     print("Test Accuracy: {0}%".format(test_accuracy * 100.0))
 
     sess.close()
-#endregion
-
-#region data setup
-def get_mnist_data():
-    # Use the TF helper function retrieve the MNIST data
-    return input_data.read_data_sets("MNIST_data/", one_hot=True)
-#endregion
-
-#region TF methods
-def __configure_placeholders():
-    # Placeholder for 28 X 28 (=784) image data
-    x = tf.placeholder(tf.float32, shape=[None, 784])
-
-    # element vector, containing the predicted digit(0-9) class in one-hot encoded format. 
-    # e.g. [0,1,0,0,0,0,0,0,0,0] for 1, [0,0,0,0,0,0,0,0,0,1] for 9
-    y_ = tf.placeholder(tf.float32, [None, 10])
-
-    return x, y_
-
-
-def __configure_weights_and_bias():
-    W = tf.Variable(tf.zeros([784, 10]))
-    b = tf.Variable(tf.zeros([10]))
-
-    return W, b
 #endregion
 
 run()

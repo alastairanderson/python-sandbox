@@ -6,6 +6,11 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 #endregion
 
+'''
+Uses a linear regression algorithm to train a model to fit
+data that is generated specifically to match a linear model
+'''
+
 #region constants
 NUM_OF_HOUSES = 160
 
