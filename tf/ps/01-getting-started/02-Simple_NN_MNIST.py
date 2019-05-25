@@ -28,7 +28,20 @@ def run():
     # define our inference model that will perform the prediction
     y = tf.nn.softmax(tf.matmul(x, W) + b)
 
-    # loss is cross entropy - https://www.tensorflow.org/api_docs/python/tf/nn/softmax_cross_entropy_with_logits
+    # softmax is used in multiclass NNs: 
+    # https://developers.google.com/machine-learning/crash-course/multi-class-neural-networks/softmax
+
+    # review the shapes for cross entropy
+    print("y shape: {0}".format(y.get_shape()))
+    print("y_ shape: {0}".format(y_.get_shape()))
+
+    # loss is cross entropy
+    # sm_ce_wi_log used to 
+    # https://www.tensorflow.org/api_docs/python/tf/nn/softmax_cross_entropy_with_logits
+    # https://stackoverflow.com/questions/34240703/what-is-logits-softmax-and-softmax-cross-entropy-with-logits
+
+    # reduce_mean used to get a single mean value from a multi-dimensional tensor
+    # https://www.tensorflow.org/api_docs/python/tf/math/reduce_mean
     cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=y))
 
     # each training step in gradient decent we want to minimize cross entropy
