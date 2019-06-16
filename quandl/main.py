@@ -6,7 +6,7 @@ import quandl
 
 
 # TODO: Ensure these are stored in environment variables before checking this in.
-API_KEY = 'ryKLxaSSXe41u8EFoVnh'
+API_KEY = ''
 
 
 # 1. Authenticate
