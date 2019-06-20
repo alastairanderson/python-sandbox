@@ -1,6 +1,8 @@
 # https://github.com/quandl/quandl-python
 # https://pypi.org/project/Quandl/
 
+# requirements.txt
+# quandl==3.4.8
 
 import quandl
 
