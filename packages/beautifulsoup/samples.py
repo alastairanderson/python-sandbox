@@ -7,42 +7,46 @@ Notes:
 '''
 
 # constants
-LOCAL_HTML_FILE = "./sample.html"
-URL = "https://www.ft.com/news-feed?page=1"
+# LOCAL_HTML_FILE = "./sample.html"
+# URL = "https://www.ft.com/news-feed?page=1"
 
 #region retrieve + save HTML
-import os           # built-in Python package
-import requests     # https://pypi.org/project/requests/
+# import os           # built-in Python package
+# import requests     # https://pypi.org/project/requests/
 
-if os.path.isfile(LOCAL_HTML_FILE):
-    file = open(LOCAL_HTML_FILE, "r")
-    raw_html = file.read()
-    file.close()
-else:
-    response = requests.get(URL)
+# if os.path.isfile(LOCAL_HTML_FILE):
+#     file = open(LOCAL_HTML_FILE, "r")
+#     raw_html = file.read()
+#     file.close()
+# else:
+#     response = requests.get(URL)
 
-    if response:
-        if response.status_code == 200:
-            raw_html = response.content.decode()
-            with open(LOCAL_HTML_FILE, "w") as f:
-                f.write(html)
-                f.close()
+#     if response:
+#         if response.status_code == 200:
+#             raw_html = response.content.decode()
+#             with open(LOCAL_HTML_FILE, "w") as f:
+#                 f.write(html)
+#                 f.close()
 #endregion
 
 from bs4 import BeautifulSoup       # https://www.crummy.com/software/BeautifulSoup/bs4/doc/
 
-
 # Create a bs object from the raw html with a specified parser (lxml)
-soup = BeautifulSoup(raw_html, "lxml")   # https://www.crummy.com/software/BeautifulSoup/bs4/doc/#beautifulsoup
+sample_html = '<b class="boldest">Extremely bold</b>'
+soup = BeautifulSoup(sample_html, "lxml")     # https://www.crummy.com/software/BeautifulSoup/bs4/doc/#beautifulsoup
 
 # Kinds of objects
-## bs4.element.Tag
-tag = soup.li
+## Tag
+# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#tag
+tag = soup.b
+# type(tag) == bs4.element.Tag
 
 ## .name
+# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#name
 tag.name
 
 ## Attributes
+# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#attributes
 ### access value of an individual attribute
 tag['class']    # access value of the class attribute
 tag.attrs       # access the dictionary of the attributes
@@ -58,6 +62,36 @@ del tag['another-attribute']
 tag.get('id')           # None
 
 ## Multi-valued attributes
+# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#multi-valued-attributes
+
+css_soup = BeautifulSoup('<p class="body"></p>')
+css_soup.p['class']
+# returned as a list: ["body"]
+
+css_soup = BeautifulSoup('<p class="body strikeout"></p>')
+css_soup.p['class']     
+# returned as a list: ["body", "strikeout"]
+
+# If an attribute looks like it has more than one value, but it’s not a multi-valued attribute 
+# as defined by any version of the HTML standard, Beautiful Soup will leave the attribute alone
+# id_soup = BeautifulSoup('<p id="my id"></p>')
+# id_soup.p['id']
+# 'my id'
+# NOTE: class, rel, rev, accept-charset, headers, and accesskey accept multiple values as per HTML5 standard
+
+### to get an attribute's values as a list, even if they aren't in a list
+# id_list = id_soup.get_attribute_list('id')
+# mv_dt_list == ['my id']
+
+## Navigable String
+# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#navigablestring
+### A string corresponds to a bit of text within a tag
+
+tag.string
+# type(tag.string) == bs4.element.NavigableString
+# You can’t edit a string in place, but you can replace one string with another
+tag.string.replace_with("No longer bold")
+# tag == '<b class="boldest">No longer bold</b>'
 
 
 
