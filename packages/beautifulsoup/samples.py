@@ -4,40 +4,42 @@ lxml==4.3.4
 
 Notes:
 - PyPi package 'requests' is required for retrieving HTML page with the following code
+- Documentation: https://www.crummy.com/software/BeautifulSoup/bs4/doc/
 '''
 
-from bs4 import BeautifulSoup       # https://www.crummy.com/software/BeautifulSoup/bs4/doc/
+from bs4 import BeautifulSoup
 
-# ------------------------------------------------------
-# Create a bs object from the raw html with a specified parser (lxml)
 sample_html = '<b class="boldest">Extremely bold</b>'
-soup = BeautifulSoup(sample_html, features="lxml")     # https://www.crummy.com/software/BeautifulSoup/bs4/doc/#beautifulsoup
 
-# Represents the document 
-# For most purposes treated as a Tag object. 
-# Supports most of 'Navigating the tree' and 'Searching the tree'.
+# Create a BeautifulSoup object with a specified parser (lxml)
+soup = BeautifulSoup(sample_html, features="lxml")      # https://www.crummy.com/software/BeautifulSoup/bs4/doc/#beautifulsoup
+                                                        # Represents the document; Mostly treated as a Tag object. 
+                                                        # Supports most of 'Navigating the tree' and 'Searching the tree'.
 
 # soup.name == u'[document]'
 # It has no name and no attributes - but has been given a special value for the .name attribute.
 
 
 #region Kinds of objects
-# Tag
+
+#region Tag
+# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#tag
+
 tag = soup.b    # type(tag) == bs4.element.Tag
-                # https://www.crummy.com/software/BeautifulSoup/bs4/doc/#tag
+#endregion
 
-
-# Name
+#region Name
+# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#name
 tag.name        # 'b'
-                # https://www.crummy.com/software/BeautifulSoup/bs4/doc/#name
+                
+#endregion
 
+#region Attributes
+# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#attributes
 
-# Attributes   # https://www.crummy.com/software/BeautifulSoup/bs4/doc/#attributes
 tag['class']    # access value of the class attribute
 tag.attrs       # access the dictionary of the attributes
 
-
-# Attribute Modifications
 tag['id'] = 'verybold'          # Add / Modify
 tag['another-attribute'] = 1    # Add / Modify
 del tag['id']                   # Delete
@@ -45,17 +47,17 @@ del tag['another-attribute']    # Delete
 # tag['id']                     # KeyError: 'id'
 tag.get('id')                   # None
 
+#endregion
 
-# Multi-valued attributes
+#region Multi-valued attributes
+# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#multi-valued-attributes
+
 css_soup = BeautifulSoup('<p class="body"></p>', features="lxml")
 css_soup.p['class']             # returned as a list: ["body"]
 
 css_soup = BeautifulSoup('<p class="body strikeout"></p>', features="lxml")
 css_soup.p['class']             # returned as a list: ["body", "strikeout"]
-                                # https://www.crummy.com/software/BeautifulSoup/bs4/doc/#multi-valued-attributes
-
-
-
+                                
 
 # If an attribute looks like it has more than one value, but it’s not a multi-valued attribute 
 # as defined by any version of the HTML standard, Beautiful Soup will leave the attribute alone
@@ -68,9 +70,9 @@ css_soup.p['class']             # returned as a list: ["body", "strikeout"]
 # id_list = id_soup.get_attribute_list('id')
 # mv_dt_list == ['my id']
 
+#endregion
 
-# ------------------------------------------------------
-# Navigable String
+#region Navigable String
 # https://www.crummy.com/software/BeautifulSoup/bs4/doc/#navigablestring
 # A string corresponds to a bit of text within a tag
 
@@ -91,9 +93,9 @@ tag.string.replace_with("No longer bold")
 normal_python_string = str(tag.string)
 # type(normal_python_string) == str
 
+#endregion
 
-# ------------------------------------------------------
-# Comments and other special strings
+#region Comments and other special strings
 # https://www.crummy.com/software/BeautifulSoup/bs4/doc/#comments-and-other-special-strings
 
 # Tag, NavigableString, and BeautifulSoup cover almost everything you’ll see in an HTML or XML file, but 
@@ -111,20 +113,20 @@ comment = soup.b.string
 # CData, ProcessingInstruction, Declaration, and Doctype. 
 # Just like Comment, these classes are subclasses of NavigableString that add something extra to the string. 
 
-# An example that replaces the comment with a CDATA block:
-from bs4 import CData
+
+from bs4 import CData                       # An example that replaces the comment with a CDATA block
 cdata = CData("A CDATA block")
 comment.replace_with(cdata)
 
-soup.b.prettify()
-# <b>
-#  <![CDATA[A CDATA block]]>
-# </b>
+soup.b.prettify()                           # Beautifies the HTML
+
 
 # StackOverflow - What is CDATA in HTML?
 # https://stackoverflow.com/questions/7092236/what-is-cdata-in-html
 
 #endregion
+
+#endregion - Kinds of objects
 
 
 #region Navigating the tree
@@ -143,11 +145,15 @@ html_doc = """<html>
             <p class="story">...</p>
         </body>
     </html>"""
-#endregion
 
 soup = BeautifulSoup(html_doc, features="lxml")
+#endregion
 
-## Navigating using tag names           # https://www.crummy.com/software/BeautifulSoup/bs4/doc/#navigating-using-tag-names
+#region Going down
+# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#going-down
+
+#region Navigating using tag names           
+# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#navigating-using-tag-names
 
 soup.head                               # <head><title>The Dormouse's story</title></head>
 soup.title                              # <title>The Dormouse's story</title>
@@ -162,8 +168,10 @@ soup.body.b                             # You can do use this trick again and ag
 soup.a                                  # Using a tag name as an attribute will give you only the first tag by that name
                                         # <a class="sister" href="http://example.com/elsie" id="link1">Elsie</a>
 
+#endregion
 
-### .contents and .children             # https://www.crummy.com/software/BeautifulSoup/bs4/doc/#contents-and-children
+#region .contents and .children
+# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#contents-and-children
 
 head_tag = soup.head                    # head_tag == <head><title>The Dormouse's story</title></head>       
 head_tag.contents                       # A tag’s children are available in a list called .contents
@@ -186,8 +194,10 @@ text = title_tag.contents[0]            # A string does not have .contents, beca
 for child in title_tag.children:        # Iterate over a tag’s children:
     child                               # child == "The Dormouse's story"
 
+#endregion
 
-### .descendants                        # https://www.crummy.com/software/BeautifulSoup/bs4/doc/#descendants
+#region .descendants
+# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#descendants
 
 for child in head_tag.descendants:      # The .contents and .children attributes only consider a tag’s direct children. 
     child                               # The .descendants attribute iterates over all of a tag’s children, recursively
@@ -197,8 +207,10 @@ for child in head_tag.descendants:      # The .contents and .children attributes
 len(list(soup.children))                # The BeautifulSoup object only has one direct child (the <html> tag)
 len(list(soup.descendants))             # but it has a lot of descendants (28 here)
 
+#endregion
 
-### .string                             # https://www.crummy.com/software/BeautifulSoup/bs4/doc/#string
+#region .strings
+# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#string
 
 title_tag.string                        # If a tag has only one child, and that child is a NavigableString, 
                                         # the child is made available as .string:
@@ -216,8 +228,10 @@ head_tag.string                         # 'The Dormouse's story'
 soup.html.string                        # If a tag contains more than one thing, then it’s not clear what .string should 
                                         # refer to, so .string is defined to be None
 
+#endregion
 
-### .strings and stripped_strings       # https://www.crummy.com/software/BeautifulSoup/bs4/doc/#strings-and-stripped-strings
+#region .strings and stripped_strings
+# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#strings-and-stripped-strings
 
 for string in soup.strings:             # If there’s more than one thing inside a tag, you can look at just the strings 
     repr(string)                        
@@ -226,13 +240,89 @@ for string in soup.stripped_strings:    # remove whitespace using .stripped_stri
     print(repr(string))                 # strings consisting entirely of whitespace are ignored, and whitespace at the 
                                         # beginning and end of strings is removed.
 
-
-## Going up                             # https://www.crummy.com/software/BeautifulSoup/bs4/doc/#going-up
-# 
-
-
 #endregion
 
+#endregion - Going down
+
+#region Going up
+# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#going-up
+
+#region .parent
+# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#parent
+
+title_tag = soup.title                  
+title_tag                               # <title>The Dormouse's story</title>
+
+title_tag.parent                        # can access an element’s parent with the .parent attribute
+                                        # <head><title>The Dormouse's story</title></head>
+
+
+title_tag.string.parent                 # The title string itself has a parent: the <title> tag that contains it
+                                        # <title>The Dormouse's story</title>
+#endregion - .parent
+
+#region .parents
+# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#parents
+# iterate over all of an element’s parents
+
+link = soup.a
+link                # <a class="sister" href="http://example.com/elsie" id="link1">Elsie</a>
+
+for parent in link.parents:
+    if parent is None:
+        print(parent)
+    else:
+        print(parent.name)
+
+# p
+# body
+# html
+# [document]
+# None
+
+#endregion - .parents
+
+#endregion - Going up
+
+#region Going sideways
+# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#going-sideways
+
+#region sample html
+sibling_soup = BeautifulSoup("<a><b>text1</b><c>text2</c></b></a>", features="lxml")
+
+# <b> and <c> tags are are at the same level and siblings 
+# They’re both direct children of the same tag. 
+
+# When a document is pretty-printed, siblings show up at the same indentation level. 
+# You can also use this relationship in the code you write.
+
+print(sibling_soup.prettify())
+
+#endregion - sample html
+
+#region .next_sibling and .previous_sibling
+# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#next-sibling-and-previous-sibling
+
+sibling_soup.b.next_sibling                 # <c>text2</c>
+sibling_soup.c.previous_sibling             # <b>text1</b>
+
+sibling_soup.b.previous_sibling             # .previous_sibling is None, because there’s nothing before it the same level
+sibling_soup.c.next_sibling                 # Similarly, the <c> tag has a .previous_sibling but no .next_sibling
+
+sibling_soup.b.string                       # u'text1'
+sibling_soup.b.string.next_sibling          # None
+                                            # strings “text1” and “text2” are not siblings, 
+                                            # because they don’t have the same parent
+
+
+
+#endregion - .next_sibling and .previous_sibling
+
+#endregion - Going sideways
+
+
+
+#endregion - Navigating the tree
 
 
 
