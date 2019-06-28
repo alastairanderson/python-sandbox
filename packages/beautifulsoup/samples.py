@@ -237,7 +237,7 @@ for string in soup.strings:             # If there’s more than one thing insid
     repr(string)                        
 
 for string in soup.stripped_strings:    # remove whitespace using .stripped_strings generator 
-    print(repr(string))                 # strings consisting entirely of whitespace are ignored, and whitespace at the 
+    repr(string)                        # strings consisting entirely of whitespace are ignored, and whitespace at the 
                                         # beginning and end of strings is removed.
 
 #endregion
@@ -263,22 +263,15 @@ title_tag.string.parent                 # The title string itself has a parent: 
 
 #region .parents
 # https://www.crummy.com/software/BeautifulSoup/bs4/doc/#parents
-# iterate over all of an element’s parents
-
 link = soup.a
-link                # <a class="sister" href="http://example.com/elsie" id="link1">Elsie</a>
+link                                # <a class="sister" href="http://example.com/elsie" id="link1">Elsie</a>
 
-for parent in link.parents:
-    if parent is None:
-        print(parent)
-    else:
-        print(parent.name)
-
-# p
-# body
-# html
-# [document]
-# None
+for parent in link.parents:         # iterate over all of an element’s parents
+    if parent is None:              # p
+        parent                      # body
+    else:                           # html
+        parent.name                 # [document]
+                                    # None
 
 #endregion - .parents
 
@@ -296,7 +289,7 @@ sibling_soup = BeautifulSoup("<a><b>text1</b><c>text2</c></b></a>", features="lx
 # When a document is pretty-printed, siblings show up at the same indentation level. 
 # You can also use this relationship in the code you write.
 
-print(sibling_soup.prettify())
+sibling_soup.prettify()
 
 #endregion - sample html
 
@@ -314,24 +307,120 @@ sibling_soup.b.string.next_sibling          # None
                                             # strings “text1” and “text2” are not siblings, 
                                             # because they don’t have the same parent
 
+# Going back to the “three sisters” document
+#       <a href="http://example.com/elsie" class="sister" id="link1">Elsie</a>,
+#       <a href="http://example.com/lacie" class="sister" id="link2">Lacie</a> and
+#       <a href="http://example.com/tillie" class="sister" id="link3">Tillie</a>;
+# You might think that the .next_sibling of the first <a> tag would be the second <a> tag. 
+# But actually, it’s a string: the comma and newline that separate the first <a> tag from the second:
 
+link = soup.a
+link                                        # <a class="sister" href="http://example.com/elsie" id="link1">Elsie</a>
+link.next_sibling                           # u',\n'
+
+link.next_sibling.next_sibling              # The second <a> tag is actually the .next_sibling of the comma
+                                            # <a class="sister" href="http://example.com/lacie" id="link2">Lacie</a>
 
 #endregion - .next_sibling and .previous_sibling
 
+#region .next_siblings and .previous_siblings
+# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#next-siblings-and-previous-siblings
+
+for sibling in soup.a.next_siblings:
+    repr(sibling)                           # u',\n'
+                                            # <a class="sister" href="http://example.com/lacie" id="link2">Lacie</a>
+                                            # u' and\n'
+                                            # <a class="sister" href="http://example.com/tillie" id="link3">Tillie</a>
+                                            # u'; and they lived at the bottom of a well.'
+                                            # None
+
+for sibling in soup.find(id="link3").previous_siblings:
+    repr(sibling)                           # ' and\n'
+                                            # <a class="sister" href="http://example.com/lacie" id="link2">Lacie</a>
+                                            # u',\n'
+                                            # <a class="sister" href="http://example.com/elsie" id="link1">Elsie</a>
+                                            # u'Once upon a time there were three little sisters; and their names were\n'
+                                            # None
+
+#endregion - .next_siblings and .previous_siblings
+
 #endregion - Going sideways
 
+#region Going back and forth
+# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#going-back-and-forth
 
+#region Intro
+    # look at the beginning of the “three sisters” document:
+    #       <html><head><title>The Dormouse's story</title></head>
+    #       <p class="title"><b>The Dormouse's story</b></p>
+
+    # An HTML parser takes this string of characters and turns it into a series of events: 
+    #       - “open an <html> tag”, 
+    #       - “open a <head> tag”, 
+    #       - “open a <title> tag”, 
+    #       - “add a string”, 
+    #       - “close the <title> tag”, 
+    #       - “open a <p> tag”, and so on. 
+
+    # Beautiful Soup offers tools for reconstructing the initial parse of the document.
+
+#endregion Intro
+
+#region .next_element and .previous_element
+# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#next-element-and-previous-element
+
+# The .next_element attribute of a string or tag points to whatever was parsed immediately afterwards. 
+# It might be the same as .next_sibling, but it’s usually drastically different.
+
+# Here’s the final <a> tag in the “three sisters” document. Its .next_sibling is a string: 
+# the conclusion of the sentence that was interrupted by the start of the <a> tag.:
+
+last_a_tag = soup.find("a", id="link3")
+last_a_tag                                          # <a class="sister" href="http://example.com/tillie" id="link3">Tillie</a>
+last_a_tag.next_sibling                             # '; and they lived at the bottom of a well.'
+
+# But the .next_element of that <a> tag, the thing that was parsed immediately after the <a> tag, 
+# is not the rest of that sentence: it’s the word “Tillie”:
+
+last_a_tag.next_element                             # u'Tillie'
+
+# That’s because in the original markup, the word “Tillie” appeared before that semicolon.
+# The parser encountered an <a> tag, then the word “Tillie”, then the closing </a> tag, then the semicolon and 
+# rest of the sentence. The semicolon is on the same level as the <a> tag, but the word “Tillie” was encountered first.
+
+# The .previous_element attribute is the exact opposite of .next_element. 
+# It points to whatever element was parsed immediately before this one:
+
+last_a_tag.previous_element                         # u' and\n'
+last_a_tag.previous_element.next_element            # <a class="sister" href="http://example.com/tillie" id="link3">Tillie</a>
+
+#endregion .next_element and .previous_element
+
+#region .next_elements and .previous_elements
+# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#next-elements-and-previous-elements
+
+for element in last_a_tag.next_elements:
+    repr(element)                                   # u'Tillie'
+                                                    # u';\nand they lived at the bottom of a well.'
+                                                    # u'\n\n'
+                                                    # <p class="story">...</p>
+                                                    # u'...'
+                                                    # u'\n'
+                                                    # None
+
+#endregion - .next_elements and .previous_elements
+
+#endregion Going back and forth
 
 #endregion - Navigating the tree
 
 
-
-
-
-
-
-
 #region Searching the tree
+
+
+
+
+
 ## Filters
 ### a string
 list_items = soup.find_all('li')
@@ -348,10 +437,46 @@ for tag in soup.find_all(re.compile("^b")):
 for tag in soup.find_all(re.compile("t")):
     print(tag.name)
 
-#endregion
+#endregion - Searching the tree
 
 
-# Example 1: Extract a collection of elements 
+
+
+
+
+#region Modifying the tree
+# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#modifying-the-tree
+# TODO: This is lower priority (28/06/2019), skip for now.
+#endregion - Modifying the tree
+
+#region Output
+# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#output
+# TODO: This is lower priority (28/06/2019), skip for now.
+#endregion - Output
+
+#region Specifying the parser to use
+# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#specifying-the-parser-to-use
+#endregion - Specifying the parser to use
+
+#region Encodings
+# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#encodings
+#endregion - Encodings
+
+#region Comparing objects for equality
+# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#comparing-objects-for-equality
+#endregion - Comparing objects for equality
+
+#region Copying Beautiful Soup objects
+# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#copying-beautiful-soup-objects
+#endregion - Copying Beautiful Soup objects
+
+#region Parsing only part of a document
+# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#parsing-only-part-of-a-document
+#endregion - Parsing only part of a document
+
+#region Troubleshooting
+#endregion - Troubleshooting
+
 
 
 
