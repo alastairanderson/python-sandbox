@@ -6,37 +6,45 @@ Notes:
 - PyPi package 'requests' is required for retrieving HTML page with the following code
 - Documentation: https://www.crummy.com/software/BeautifulSoup/bs4/doc/
 - Release Notes: https://bazaar.launchpad.net/%7Eleonardr/beautifulsoup/bs4/view/head:/CHANGELOG
+- For the 'Differences between parsers', we need to 'pip install html5lib'
 '''
 
 from bs4 import BeautifulSoup
 
 sample_html = '<b class="boldest">Extremely bold</b>'
 
-# Create a BeautifulSoup object with a specified parser (lxml)
+'''
+Create a BeautifulSoup object with a specified parser (lxml)
+'''
 soup = BeautifulSoup(sample_html, features="lxml")      # https://www.crummy.com/software/BeautifulSoup/bs4/doc/#beautifulsoup
                                                         # Represents the document; Mostly treated as a Tag object. 
                                                         # Supports most of 'Navigating the tree' and 'Searching the tree'.
-
-# soup.name == u'[document]'
-# It has no name and no attributes - but has been given a special value for the .name attribute.
-
-
+'''
+soup.name == u'[document]'
+It has no name and no attributes - but has been given a special value for the .name attribute.
+'''
 #region Kinds of objects
 
 #region Tag
-# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#tag
+'''
+https://www.crummy.com/software/BeautifulSoup/bs4/doc/#tag
+'''
 tag = soup.b    # type(tag) == bs4.element.Tag
 
 #endregion
 
 #region Name
-# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#name
+'''
+https://www.crummy.com/software/BeautifulSoup/bs4/doc/#name
+'''
 tag.name        # 'b'
                 
 #endregion
 
 #region Attributes
-# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#attributes
+'''
+https://www.crummy.com/software/BeautifulSoup/bs4/doc/#attributes
+'''
 tag['class']    # access value of the class attribute
 tag.attrs       # access the dictionary of the attributes
 
@@ -50,8 +58,9 @@ tag.get('id')                   # None
 #endregion
 
 #region Multi-valued attributes
-# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#multi-valued-attributes
-
+'''
+https://www.crummy.com/software/BeautifulSoup/bs4/doc/#multi-valued-attributes
+'''
 css_soup = BeautifulSoup('<p class="body"></p>', features="lxml")
 css_soup.p['class']             # returned as a list: ["body"]
 
@@ -118,15 +127,17 @@ there are a few leftover bits. The only one you’ll probably ever need to worry
 markup = "<b><!--Hey, buddy. Want to buy a used parser?--></b>"
 soup = BeautifulSoup(markup, features="lxml")
 comment = soup.b.string
+'''
 # comment == 'Hey, buddy. Want to buy a used parser?'
 # type(comment) == <class 'bs4.element.Comment'>
+'''
 
-# soup.b.prettify()      # view a prettified version of the <b> tag
-
-# Beautiful Soup defines classes for anything else that might show up in an XML document: 
-# CData, ProcessingInstruction, Declaration, and Doctype. 
-# Just like Comment, these classes are subclasses of NavigableString that add something extra to the string. 
-
+soup.b.prettify()      # view a prettified version of the <b> tag
+'''
+Beautiful Soup defines classes for anything else that might show up in an XML document: 
+CData, ProcessingInstruction, Declaration, and Doctype. 
+Just like Comment, these classes are subclasses of NavigableString that add something extra to the string. 
+'''
 
 from bs4 import CData                       # An example that replaces the comment with a CDATA block
 cdata = CData("A CDATA block")
@@ -134,10 +145,10 @@ comment.replace_with(cdata)
 
 soup.b.prettify()                           # Beautifies the HTML
 
-
-# StackOverflow - What is CDATA in HTML?
-# https://stackoverflow.com/questions/7092236/what-is-cdata-in-html
-
+'''
+StackOverflow - What is CDATA in HTML?
+https://stackoverflow.com/questions/7092236/what-is-cdata-in-html
+'''
 #endregion
 
 #endregion - Kinds of objects
@@ -162,32 +173,37 @@ soup = BeautifulSoup(html_doc, features="lxml")
 
 
 #region Navigating the tree
-# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#navigating-the-tree
+'''
+https://www.crummy.com/software/BeautifulSoup/bs4/doc/#navigating-the-tree
+'''
 
 #region Going down
-# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#going-down
+'''
+https://www.crummy.com/software/BeautifulSoup/bs4/doc/#going-down
+'''
 
-#region Navigating using tag names           
-# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#navigating-using-tag-names
-
-soup.head                               # <head><title>The Dormouse's story</title></head>
-soup.title                              # <title>The Dormouse's story</title>
-
-
-soup.body.b                             # You can do use this trick again and again to zoom in on a certain part of the 
-                                        # parse tree. 
-                                        # This code gets the first <b> tag beneath the <body> tag:
-                                        # <b>The Dormouse's story</b>
+#region Navigating using tag names
+'''          
+https://www.crummy.com/software/BeautifulSoup/bs4/doc/#navigating-using-tag-names
+'''
+soup.head       # <head><title>The Dormouse's story</title></head>
+soup.title      # <title>The Dormouse's story</title>
 
 
-soup.a                                  # Using a tag name as an attribute will give you only the first tag by that name
-                                        # <a class="sister" href="http://example.com/elsie" id="link1">Elsie</a>
+soup.body.b     # You can do use this trick again and again to zoom in on a certain part of the 
+                # parse tree. 
+                # This code gets the first <b> tag beneath the <body> tag:
+                # <b>The Dormouse's story</b>
 
+
+soup.a          # Using a tag name as an attribute will give you only the first tag by that name
+                # <a class="sister" href="http://example.com/elsie" id="link1">Elsie</a>
 #endregion
 
 #region .contents and .children
-# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#contents-and-children
-
+'''
+https://www.crummy.com/software/BeautifulSoup/bs4/doc/#contents-and-children
+'''
 head_tag = soup.head                    # head_tag == <head><title>The Dormouse's story</title></head>       
 head_tag.contents                       # A tag’s children are available in a list called .contents
                                         # ["<title>The Dormouse's story</title>"]
@@ -205,15 +221,15 @@ text = title_tag.contents[0]            # A string does not have .contents, beca
                                         # text.contents - this would throw the following error:
                                         # AttributeError: 'NavigableString' object has no attribute 'contents'
 
-
 for child in title_tag.children:        # Iterate over a tag’s children:
     child                               # child == "The Dormouse's story"
 
 #endregion
 
 #region .descendants
-# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#descendants
-
+'''
+https://www.crummy.com/software/BeautifulSoup/bs4/doc/#descendants
+'''
 for child in head_tag.descendants:      # The .contents and .children attributes only consider a tag’s direct children. 
     child                               # The .descendants attribute iterates over all of a tag’s children, recursively
                                         #     <title>The Dormouse's story</title>
@@ -225,8 +241,9 @@ len(list(soup.descendants))             # but it has a lot of descendants (28 he
 #endregion
 
 #region .strings
-# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#string
-
+'''
+https://www.crummy.com/software/BeautifulSoup/bs4/doc/#string
+'''
 title_tag.string                        # If a tag has only one child, and that child is a NavigableString, 
                                         # the child is made available as .string:
                                         # 'The Dormouse's story'
@@ -242,29 +259,30 @@ head_tag.string                         # 'The Dormouse's story'
 
 soup.html.string                        # If a tag contains more than one thing, then it’s not clear what .string should 
                                         # refer to, so .string is defined to be None
-
 #endregion
 
 #region .strings and stripped_strings
-# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#strings-and-stripped-strings
-
+'''
+https://www.crummy.com/software/BeautifulSoup/bs4/doc/#strings-and-stripped-strings
+'''
 for string in soup.strings:             # If there’s more than one thing inside a tag, you can look at just the strings 
     repr(string)                        
 
 for string in soup.stripped_strings:    # remove whitespace using .stripped_strings generator 
     repr(string)                        # strings consisting entirely of whitespace are ignored, and whitespace at the 
                                         # beginning and end of strings is removed.
-
 #endregion
 
 #endregion - Going down
 
 #region Going up
-# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#going-up
-
+'''
+https://www.crummy.com/software/BeautifulSoup/bs4/doc/#going-up
+'''
 #region .parent
-# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#parent
-
+'''
+https://www.crummy.com/software/BeautifulSoup/bs4/doc/#parent
+'''
 title_tag = soup.title                  
 title_tag                               # <title>The Dormouse's story</title>
 
@@ -277,7 +295,9 @@ title_tag.string.parent                 # The title string itself has a parent: 
 #endregion - .parent
 
 #region .parents
-# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#parents
+'''
+https://www.crummy.com/software/BeautifulSoup/bs4/doc/#parents
+'''
 link = soup.a
 link                                # <a class="sister" href="http://example.com/elsie" id="link1">Elsie</a>
 
@@ -287,30 +307,32 @@ for parent in link.parents:         # iterate over all of an element’s parents
     else:                           # html
         parent.name                 # [document]
                                     # None
-
 #endregion - .parents
 
 #endregion - Going up
 
 #region Going sideways
-# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#going-sideways
-
+'''
+https://www.crummy.com/software/BeautifulSoup/bs4/doc/#going-sideways
+'''
 #region sample html
 sibling_soup = BeautifulSoup("<a><b>text1</b><c>text2</c></b></a>", features="lxml")
 
-# <b> and <c> tags are are at the same level and siblings 
-# They’re both direct children of the same tag. 
+'''
+<b> and <c> tags are are at the same level and siblings 
+They’re both direct children of the same tag. 
 
-# When a document is pretty-printed, siblings show up at the same indentation level. 
-# You can also use this relationship in the code you write.
-
+When a document is pretty-printed, siblings show up at the same indentation level. 
+You can also use this relationship in the code you write.
+'''
 sibling_soup.prettify()
 
 #endregion - sample html
 
 #region .next_sibling and .previous_sibling
-# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#next-sibling-and-previous-sibling
-
+'''
+https://www.crummy.com/software/BeautifulSoup/bs4/doc/#next-sibling-and-previous-sibling
+'''
 sibling_soup.b.next_sibling                 # <c>text2</c>
 sibling_soup.c.previous_sibling             # <b>text1</b>
 
@@ -321,14 +343,14 @@ sibling_soup.b.string                       # u'text1'
 sibling_soup.b.string.next_sibling          # None
                                             # strings “text1” and “text2” are not siblings, 
                                             # because they don’t have the same parent
-
-# Going back to the “three sisters” document
-#       <a href="http://example.com/elsie" class="sister" id="link1">Elsie</a>,
-#       <a href="http://example.com/lacie" class="sister" id="link2">Lacie</a> and
-#       <a href="http://example.com/tillie" class="sister" id="link3">Tillie</a>;
-# You might think that the .next_sibling of the first <a> tag would be the second <a> tag. 
-# But actually, it’s a string: the comma and newline that separate the first <a> tag from the second:
-
+'''
+Going back to the “three sisters” document
+      <a href="http://example.com/elsie" class="sister" id="link1">Elsie</a>,
+      <a href="http://example.com/lacie" class="sister" id="link2">Lacie</a> and
+      <a href="http://example.com/tillie" class="sister" id="link3">Tillie</a>;
+You might think that the .next_sibling of the first <a> tag would be the second <a> tag. 
+But actually, it’s a string: the comma and newline that separate the first <a> tag from the second:
+'''
 link = soup.a
 link                                        # <a class="sister" href="http://example.com/elsie" id="link1">Elsie</a>
 link.next_sibling                           # u',\n'
@@ -339,8 +361,9 @@ link.next_sibling.next_sibling              # The second <a> tag is actually the
 #endregion - .next_sibling and .previous_sibling
 
 #region .next_siblings and .previous_siblings
-# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#next-siblings-and-previous-siblings
-
+'''
+https://www.crummy.com/software/BeautifulSoup/bs4/doc/#next-siblings-and-previous-siblings
+'''
 for sibling in soup.a.next_siblings:
     repr(sibling)                           # u',\n'
                                             # <a class="sister" href="http://example.com/lacie" id="link2">Lacie</a>
@@ -362,58 +385,64 @@ for sibling in soup.find(id="link3").previous_siblings:
 #endregion - Going sideways
 
 #region Going back and forth
-# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#going-back-and-forth
-
+'''
+https://www.crummy.com/software/BeautifulSoup/bs4/doc/#going-back-and-forth
+'''
 #region Intro
-    # look at the beginning of the “three sisters” document:
-    #       <html><head><title>The Dormouse's story</title></head>
-    #       <p class="title"><b>The Dormouse's story</b></p>
+'''
+    look at the beginning of the “three sisters” document:
+          <html><head><title>The Dormouse's story</title></head>
+          <p class="title"><b>The Dormouse's story</b></p>
 
-    # An HTML parser takes this string of characters and turns it into a series of events: 
-    #       - “open an <html> tag”, 
-    #       - “open a <head> tag”, 
-    #       - “open a <title> tag”, 
-    #       - “add a string”, 
-    #       - “close the <title> tag”, 
-    #       - “open a <p> tag”, and so on. 
+    An HTML parser takes this string of characters and turns it into a series of events: 
+          - “open an <html> tag”, 
+          - “open a <head> tag”, 
+          - “open a <title> tag”, 
+          - “add a string”, 
+          - “close the <title> tag”, 
+          - “open a <p> tag”, and so on. 
 
-    # Beautiful Soup offers tools for reconstructing the initial parse of the document.
-
+    Beautiful Soup offers tools for reconstructing the initial parse of the document.
+'''
 #endregion Intro
 
 #region .next_element and .previous_element
-# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#next-element-and-previous-element
+'''
+https://www.crummy.com/software/BeautifulSoup/bs4/doc/#next-element-and-previous-element
 
-# The .next_element attribute of a string or tag points to whatever was parsed immediately afterwards. 
-# It might be the same as .next_sibling, but it’s usually drastically different.
+The .next_element attribute of a string or tag points to whatever was parsed immediately afterwards. 
+It might be the same as .next_sibling, but it’s usually drastically different.
 
-# Here’s the final <a> tag in the “three sisters” document. Its .next_sibling is a string: 
-# the conclusion of the sentence that was interrupted by the start of the <a> tag.:
-
+Here’s the final <a> tag in the “three sisters” document. Its .next_sibling is a string: 
+the conclusion of the sentence that was interrupted by the start of the <a> tag.:
+'''
 last_a_tag = soup.find("a", id="link3")
-last_a_tag                                          # <a class="sister" href="http://example.com/tillie" id="link3">Tillie</a>
-last_a_tag.next_sibling                             # '; and they lived at the bottom of a well.'
+last_a_tag                                      # <a class="sister" href="http://example.com/tillie" id="link3">Tillie</a>
+last_a_tag.next_sibling                         # '; and they lived at the bottom of a well.'
 
-# But the .next_element of that <a> tag, the thing that was parsed immediately after the <a> tag, 
-# is not the rest of that sentence: it’s the word “Tillie”:
-
+'''
+But the .next_element of that <a> tag, the thing that was parsed immediately after the <a> tag, 
+is not the rest of that sentence: it’s the word “Tillie”:
+'''
 last_a_tag.next_element                             # u'Tillie'
 
-# That’s because in the original markup, the word “Tillie” appeared before that semicolon.
-# The parser encountered an <a> tag, then the word “Tillie”, then the closing </a> tag, then the semicolon and 
-# rest of the sentence. The semicolon is on the same level as the <a> tag, but the word “Tillie” was encountered first.
+'''
+That’s because in the original markup, the word “Tillie” appeared before that semicolon.
+The parser encountered an <a> tag, then the word “Tillie”, then the closing </a> tag, then the semicolon and 
+rest of the sentence. The semicolon is on the same level as the <a> tag, but the word “Tillie” was encountered first.
 
-# The .previous_element attribute is the exact opposite of .next_element. 
-# It points to whatever element was parsed immediately before this one:
-
+The .previous_element attribute is the exact opposite of .next_element. 
+It points to whatever element was parsed immediately before this one:
+'''
 last_a_tag.previous_element                         # u' and\n'
 last_a_tag.previous_element.next_element            # <a class="sister" href="http://example.com/tillie" id="link3">Tillie</a>
 
 #endregion .next_element and .previous_element
 
 #region .next_elements and .previous_elements
-# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#next-elements-and-previous-elements
-
+'''
+https://www.crummy.com/software/BeautifulSoup/bs4/doc/#next-elements-and-previous-elements
+'''
 for element in last_a_tag.next_elements:
     repr(element)                                   # u'Tillie'
                                                     # u';\nand they lived at the bottom of a well.'
@@ -431,27 +460,31 @@ for element in last_a_tag.next_elements:
 
 
 #region Searching the tree
-# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#searching-the-tree
-
+'''
+https://www.crummy.com/software/BeautifulSoup/bs4/doc/#searching-the-tree
+'''
 #region Kinds of filters
-# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#kinds-of-filters
-
+'''
+https://www.crummy.com/software/BeautifulSoup/bs4/doc/#kinds-of-filters
+'''
 #region A string
-# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#a-string
+'''
+https://www.crummy.com/software/BeautifulSoup/bs4/doc/#a-string
+'''
+soup.find_all('b')      # perform a match against that exact string. 
+                        # This code finds all the <b> tags in the document
+                        # [<b>The Dormouse's story</b>]
 
-soup.find_all('b')                      # perform a match against that exact string. 
-                                        # This code finds all the <b> tags in the document
-                                        # [<b>The Dormouse's story</b>]
+                        # If you pass in a byte string, Beautiful Soup will assume the string is encoded 
+                        # as UTF-8. You can avoid this by passing in a Unicode string instead.
 
-                                        # If you pass in a byte string, Beautiful Soup will assume the string is encoded 
-                                        # as UTF-8. You can avoid this by passing in a Unicode string instead.
-
-                                        # NOTE: find_all() returns a list of bs4.element.Tag
+                        # NOTE: find_all() returns a list of bs4.element.Tag
 #endregion - A string
 
 #region A regular expression
-# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#a-regular-expression
-
+'''
+https://www.crummy.com/software/BeautifulSoup/bs4/doc/#a-regular-expression
+'''
 import re
 for tag in soup.find_all(re.compile("^b")):     # finds all the tags whose names start with the letter “b”; 
     tag.name                                    # in this case, the <body> tag and the <b> tag
@@ -467,8 +500,9 @@ for tag in soup.find_all(re.compile("t")):      # finds all the tags whose names
 #endregion - A regular expression
 
 #region A list
-# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#a-list
-
+'''
+https://www.crummy.com/software/BeautifulSoup/bs4/doc/#a-list
+'''
 soup.find_all(["a", "b"])               # [<b>The Dormouse's story</b>,
                                         #  <a class="sister" href="http://example.com/elsie" id="link1">Elsie</a>,
                                         #  <a class="sister" href="http://example.com/lacie" id="link2">Lacie</a>,
@@ -476,8 +510,9 @@ soup.find_all(["a", "b"])               # [<b>The Dormouse's story</b>,
 #endregion - A list
 
 #region True
-# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#true
-
+'''
+https://www.crummy.com/software/BeautifulSoup/bs4/doc/#true
+'''
 for tag in soup.find_all(True):         # The value True matches everything it can. 
     tag.name                            # This code finds all the tags in the document, but none of the text strings
 
@@ -490,12 +525,14 @@ for tag in soup.find_all(True):         # The value True matches everything it c
 #endregion - True
 
 #region A function
-# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#a-function
+'''
+https://www.crummy.com/software/BeautifulSoup/bs4/doc/#a-function
 
-# define a function that takes an element as its only argument. 
-# The function should return True if the argument matches, and False otherwise.
+define a function that takes an element as its only argument. 
+The function should return True if the argument matches, and False otherwise.
 
-# returns True if a tag defines the “class” attribute but doesn’t define the “id” attribute
+returns True if a tag defines the “class” attribute but doesn’t define the “id” attribute
+'''
 def has_class_but_no_id(tag):           
     return tag.has_attr('class') and not tag.has_attr('id')
 
@@ -503,20 +540,21 @@ soup.find_all(has_class_but_no_id)          # [<p class="title"><b>The Dormouse'
                                             #  <p class="story">Once upon a time there were...</p>,
                                             #  <p class="story">...</p>,
                                             # ...]
-
-# If you pass in a function to filter on a specific attribute like href, 
-# the argument passed into the function will be the attribute value, not the whole tag. 
-# Here’s a function that finds all a tags whose href attribute does not match a regular expression
+'''
+If you pass in a function to filter on a specific attribute like href, 
+the argument passed into the function will be the attribute value, not the whole tag. 
+Here’s a function that finds all a tags whose href attribute does not match a regular expression
+'''
 def not_lacie(href):
     return href and not re.compile("lacie").search(href)
 
 soup.find_all(href=not_lacie)               # [<a class="sister" href="http://example.com/elsie" id="link1">Elsie</a>,
                                             #  <a class="sister" href="http://example.com/tillie" id="link3">Tillie</a>]
 
-
-# The function can be as complicated as you need it to be. 
-# Here’s a function that returns True if a tag is surrounded by string objects:
-
+'''
+The function can be as complicated as you need it to be. 
+Here’s a function that returns True if a tag is surrounded by string objects:
+'''
 from bs4 import NavigableString
 def surrounded_by_strings(tag):
     return (isinstance(tag.next_element, NavigableString)
@@ -535,7 +573,6 @@ Signature: find_all(name, attrs, recursive, string, limit, **kwargs)
 
 The find_all() method looks through a tag’s descendants and retrieves all descendants that match your filters.
 '''
-
 soup.find_all("title")                      # [<title>The Dormouse's story</title>]
 
 soup.find_all("p", "title")                 # [<p class="title"><b>The Dormouse's story</b></p>]
@@ -788,7 +825,7 @@ The only difference is that find_all() returns a list containing the single resu
 
 If find_all() can’t find anything, it returns an empty list. If find() can’t find anything, it returns None:
 '''
-print(soup.find("nosuchtag"))               # None
+soup.find("nosuchtag")                     # None
 
 '''
 Remember the soup.head.title trick from Navigating using tag names? That trick works by repeatedly calling find():
@@ -822,7 +859,7 @@ a_string.find_parent("p")       # <p class="story">Once upon a time there were t
                                 #  <a class="sister" href="http://example.com/tillie" id="link3">Tillie</a>;
                                 #  and they lived at the bottom of a well.</p>
 
-a_string.find_parents("p", class="title")   # []
+a_string.find_parents("p", class_="title")   # []
 
 '''
 One of the three <a> tags is the direct parent of the string in question, so our search finds it. 
@@ -1052,14 +1089,20 @@ xml = """<tag xmlns:ns1="http://namespace1/" xmlns:ns2="http://namespace2/">
 
 soup = BeautifulSoup(xml, "xml")
 soup.select("child")                            # [<ns1:child>I'm in namespace 1</ns1:child>, <ns2:child>I'm in namespace 2</ns2:child>]
-soup.select("ns1|child", namespaces=namespaces) # [<ns1:child>I'm in namespace 1</ns1:child>]
+
+namespaces = dict(first="http://namespace1/", second="http://namespace2/")
+
+soup.select("ns1|child", namespaces=namespaces)         # [<ns1:child>I'm in namespace 1</ns1:child>]
+'''
+NOTE: The above line isn't returning what the documentation states it should
+      Changing 'ns1|child' to 'ns1:child' throws an error
+'''
 
 '''
 When handling a CSS selector that uses namespaces, Beautiful Soup uses the namespace abbreviations it found when parsing the document. 
 You can override this by passing in your own dictionary of abbreviations:
 '''
-namespaces = dict(first="http://namespace1/", second="http://namespace2/")
-soup.select("second|child", namespaces=namespaces)                              # [<ns1:child>I'm in namespace 2</ns1:child>]
+soup.select("second|child", namespaces=namespaces)       # [<ns1:child>I'm in namespace 2</ns1:child>]
 
 '''
 All this CSS selector stuff is a convenience for people who already know the CSS selector syntax. You can do all of this with 
@@ -1073,38 +1116,456 @@ But this lets you combine CSS selectors with the Beautiful Soup API.
 #endregion - Searching the tree
 
 
-
-
-
-
 #region Modifying the tree
 # https://www.crummy.com/software/BeautifulSoup/bs4/doc/#modifying-the-tree
 # TODO: This is lower priority (28/06/2019), skip for now.
 #endregion - Modifying the tree
+
 
 #region Output
 # https://www.crummy.com/software/BeautifulSoup/bs4/doc/#output
 # TODO: This is lower priority (28/06/2019), skip for now.
 #endregion - Output
 
+
 #region Specifying the parser to use
-# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#specifying-the-parser-to-use
+'''
+https://www.crummy.com/software/BeautifulSoup/bs4/doc/#specifying-the-parser-to-use
+'''
+#region Intro
+'''
+    If you just need to parse some HTML, you can dump the markup into the BeautifulSoup constructor, and it’ll probably be fine. 
+    Beautiful Soup will pick a parser for you and parse the data. But there are a few additional arguments you can pass in to the 
+    constructor to change which parser is used.
+
+    The first argument to the BeautifulSoup constructor is a string or an open filehandle–the markup you want parsed.
+    The second argument is how you’d like the markup parsed.
+
+    If you don’t specify anything, you’ll get the best HTML parser that’s installed. 
+    Beautiful Soup ranks lxml’s parser as being the best, then html5lib’s, then Python’s built-in parser. 
+    You can override this by specifying one of the following:
+
+        - What type of markup you want to parse. Currently supported are “html”, “xml”, and “html5”.
+        - The name of the parser library you want to use. Currently supported options are “lxml”, “html5lib”, and 
+          “html.parser” (Python’s built-in HTML parser).
+
+    The section Installing a parser contrasts the supported parsers.
+
+    If you don’t have an appropriate parser installed, Beautiful Soup will ignore your request and pick a different parser. 
+    Right now, the only supported XML parser is lxml. If you don’t have lxml installed, asking for an XML parser won’t give you one, 
+    and asking for “lxml” won’t work either.
+'''
+#endregion - Intro
+
+#region Differences between parsers
+'''
+https://www.crummy.com/software/BeautifulSoup/bs4/doc/#differences-between-parsers
+
+Beautiful Soup presents the same interface to a number of different parsers, but each parser is different. 
+Different parsers will create different parse trees from the same document. The biggest differences are between 
+the HTML parsers and the XML parsers. Here’s a short document, parsed as HTML:
+'''
+BeautifulSoup("<a><b /></a>", "lxml")       # <html><head></head><body><a><b></b></a></body></html>
+
+'''
+Since an empty <b /> tag is not valid HTML, the parser turns it into a <b></b> tag pair.
+
+Here’s the same document parsed as XML (running this requires that you have lxml installed). 
+Note that the empty <b /> tag is left alone, and that the document is given an XML declaration 
+instead of being put into an <html> tag.:
+'''
+BeautifulSoup("<a><b /></a>", "xml")        # <?xml version="1.0" encoding="utf-8"?>
+                                            # <a><b/></a>
+
+'''
+There are also differences between HTML parsers. If you give Beautiful Soup a perfectly-formed HTML document, 
+these differences won’t matter. One parser will be faster than another, but they’ll all give you a data 
+structure that looks exactly like the original HTML document.
+
+But if the document is not perfectly-formed, different parsers will give different results. Here’s a short, 
+invalid document parsed using lxml’s HTML parser. Note that the dangling </p> tag is simply ignored:
+'''
+BeautifulSoup("<a></p>", "lxml")            # <html><body><a></a></body></html>
+
+'''
+Here’s the same document parsed using html5lib:
+'''
+BeautifulSoup("<a></p>", "html5lib")        # <html><head></head><body><a><p></p></a></body></html>
+
+'''
+Instead of ignoring the dangling </p> tag, html5lib pairs it with an opening <p> tag. 
+This parser also adds an empty <head> tag to the document.
+
+Here’s the same document parsed with Python’s built-in HTML parser:
+'''
+BeautifulSoup("<a></p>", "html.parser")     # <a></a>
+
+'''
+Like html5lib, this parser ignores the closing </p> tag. Unlike html5lib, this parser makes no attempt 
+to create a well-formed HTML document by adding a <body> tag. Unlike lxml, it doesn’t even bother to 
+add an <html> tag.
+
+Since the document “<a></p>” is invalid, none of these techniques is the “correct” way to handle it. 
+The html5lib parser uses techniques that are part of the HTML5 standard, so it has the best claim on 
+being the “correct” way, but all three techniques are legitimate.
+
+Differences between parsers can affect your script. If you’re planning on distributing your script to 
+other people, or running it on multiple machines, you should specify a parser in the BeautifulSoup 
+constructor. That will reduce the chances that your users parse a document differently from the way 
+you parse it.
+'''
+#endregion - Differences between parsers
+
 #endregion - Specifying the parser to use
 
+
 #region Encodings
-# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#encodings
+'''
+https://www.crummy.com/software/BeautifulSoup/bs4/doc/#encodings
+'''
+#region Intro
+'''
+Any HTML or XML document is written in a specific encoding like ASCII or UTF-8. But when you load that document 
+into Beautiful Soup, you’ll discover it’s been converted to Unicode:
+'''
+markup = '<h1>Sacr\xc3\xa9 bleu!</h1>'
+'''
+NOTE: On Mac, this is instantly being set as '<h1>SacrÃ© bleu!</h1>'
+      the encoding of this should be UTF8, but VSCode/OSX are setting this differently
+'''
+
+soup = BeautifulSoup(markup, features="lxml")
+soup.h1                         # <h1>Sacré bleu!</h1>
+soup.h1.string                  # u'Sacr\xe9 bleu!'
+
+'''
+It’s not magic. (That sure would be nice.) Beautiful Soup uses a sub-library called Unicode, Dammit to detect a 
+document’s encoding and convert it to Unicode. The autodetected encoding is available as the .original_encoding 
+attribute of the BeautifulSoup object:
+'''
+soup.original_encoding              # 'utf-8'
+'''
+NOTE: On Mac, this isn't set - we are getting None
+'''
+
+'''
+Unicode, Dammit guesses correctly most of the time, but sometimes it makes mistakes. 
+Sometimes it guesses correctly, but only after a byte-by-byte search of the document that takes a very long time. 
+If you happen to know a document’s encoding ahead of time, you can avoid mistakes and delays by passing it to 
+the BeautifulSoup constructor as from_encoding.
+
+Here’s a document written in ISO-8859-8. The document is so short that Unicode, Dammit can’t get a lock on it, 
+and misidentifies it as ISO-8859-7:
+'''
+markup = b"<h1>\xed\xe5\xec\xf9</h1>"
+soup = BeautifulSoup(markup)
+soup.h1                             # <h1>νεμω</h1>
+soup.original_encoding              # 'ISO-8859-7'
+
+'''
+We can fix this by passing in the correct from_encoding:
+'''
+soup = BeautifulSoup(markup, from_encoding="iso-8859-8")
+soup.h1                             # <h1>םולש</h1>
+soup.original_encoding              # 'iso8859-8'
+
+'''
+If you don’t know what the correct encoding is, but you know that Unicode, Dammit is guessing wrong, 
+you can pass the wrong guesses in as exclude_encodings:
+'''
+soup = BeautifulSoup(markup, exclude_encodings=["ISO-8859-7"])
+soup.h1                             # <h1>םולש</h1>  - on Mac this is <h1>íåìù</h1> from encoding 'WINDOWS-1252'
+soup.original_encoding              # 'WINDOWS-1255' - on Mac this is 'WINDOWS-1252'
+
+'''
+Windows-1255 isn’t 100% correct, but that encoding is a compatible superset of ISO-8859-8, so it’s 
+close enough. (exclude_encodings is a new feature in Beautiful Soup 4.4.0.)
+
+In rare cases (usually when a UTF-8 document contains text written in a completely different encoding), 
+the only way to get Unicode may be to replace some characters with the special Unicode character 
+“REPLACEMENT CHARACTER” (U+FFFD, �). If Unicode, Dammit needs to do this, it will set the 
+.contains_replacement_characters attribute to True on the UnicodeDammit or BeautifulSoup object. 
+This lets you know that the Unicode representation is not an exact representation of the original–some 
+data was lost. If a document contains �, but .contains_replacement_characters is False, you’ll know that 
+the � was there originally (as it is in this paragraph) and doesn’t stand in for missing data.
+'''
+#endregion - Intro
+
+#region Output encoding
+'''
+https://www.crummy.com/software/BeautifulSoup/bs4/doc/#output-encoding
+
+When you write out a document from Beautiful Soup, you get a UTF-8 document, even if the document wasn’t 
+in UTF-8 to begin with. Here’s a document written in the Latin-1 encoding:
+'''
+markup = b'''
+ <html>
+  <head>
+   <meta content="text/html; charset=ISO-Latin-1" http-equiv="Content-type" />
+  </head>
+  <body>
+   <p>Sacr\xe9 bleu!</p>
+  </body>
+ </html>
+'''
+
+soup = BeautifulSoup(markup)
+soup.prettify()                     # <html>
+                                    #  <head>
+                                    #   <meta content="text/html; charset=utf-8" http-equiv="Content-type" />
+                                    #  </head>
+                                    #  <body>
+                                    #   <p>
+                                    #    Sacré bleu!
+                                    #   </p>
+                                    #  </body>
+                                    # </html>
+'''
+Note that the <meta> tag has been rewritten to reflect the fact that the document is now in UTF-8.
+
+If you don’t want UTF-8, you can pass an encoding into prettify():
+'''
+soup.prettify("latin-1")
+
+'''
+You can also call encode() on the BeautifulSoup object, or any element in the soup, just as if it 
+were a Python string:
+'''
+soup.p.encode("latin-1")            # '<p>Sacr\xe9 bleu!</p>'
+soup.p.encode("utf-8")              # '<p>Sacr\xc3\xa9 bleu!</p>'
+
+'''
+Any characters that can’t be represented in your chosen encoding will be converted into numeric XML 
+entity references. Here’s a document that includes the Unicode character SNOWMAN:
+'''
+markup = u"<b>\N{SNOWMAN}</b>"
+snowman_soup = BeautifulSoup(markup)
+tag = snowman_soup.b                    # NOTE: Without changing encoding in VSCode/OSX this is already
+                                        #       <b>☃</b>
+
+'''
+The SNOWMAN character can be part of a UTF-8 document (it looks like ☃), but there’s no representation 
+for that character in ISO-Latin-1 or ASCII, so it’s converted into “&#9731” for those encodings:
+'''
+tag.encode("utf-8")                     # <b>☃</b> - in VSCode/OSX this is b'<b>\xe2\x98\x83</b>'
+tag.encode("latin-1")                   # <b>&#9731;</b>
+tag.encode("ascii")                     # <b>&#9731;</b>
+#endregion - Output encoding
+
+#region Unicode, Dammit
+'''
+https://www.crummy.com/software/BeautifulSoup/bs4/doc/#unicode-dammit
+
+You can use Unicode, Dammit without using Beautiful Soup. It’s useful whenever you have data in an 
+unknown encoding and you just want it to become Unicode:
+'''
+from bs4 import UnicodeDammit
+dammit = UnicodeDammit("Sacr\xc3\xa9 bleu!")
+
+dammit.unicode_markup               # Sacré bleu! - this isn't utf-8 on VSCode/OSX
+dammit.original_encoding            # 'utf-8'
+
+'''
+Unicode, Dammit’s guesses will get a lot more accurate if you install the chardet or cchardet Python 
+libraries. The more data you give Unicode, Dammit, the more accurately it will guess. If you have 
+your own suspicions as to what the encoding might be, you can pass them in as a list:
+'''
+dammit = UnicodeDammit("Sacr\xe9 bleu!", ["latin-1", "iso-8859-1"])
+dammit.unicode_markup               # Sacré bleu!
+dammit.original_encoding            # 'latin-1' - this is None on VSCode/OSX
+
+'''
+Unicode, Dammit has two special features that Beautiful Soup doesn’t use.
+'''
+#endregion - Unicode, Dammit
+
+#region Unicode, Dammit - Smart quotes
+'''
+https://www.crummy.com/software/BeautifulSoup/bs4/doc/#smart-quotes
+
+You can use Unicode, Dammit to convert Microsoft smart quotes to HTML or XML entities:
+'''
+markup = b"<p>I just \x93love\x94 Microsoft Word\x92s smart quotes</p>"
+
+UnicodeDammit(markup, ["windows-1252"], smart_quotes_to="html").unicode_markup
+                                # u'<p>I just &ldquo;love&rdquo; Microsoft Word&rsquo;s smart quotes</p>'
+
+UnicodeDammit(markup, ["windows-1252"], smart_quotes_to="xml").unicode_markup
+                                # u'<p>I just &#x201C;love&#x201D; Microsoft Word&#x2019;s smart quotes</p>'
+
+'''
+You can also convert Microsoft smart quotes to ASCII quotes:
+'''
+UnicodeDammit(markup, ["windows-1252"], smart_quotes_to="ascii").unicode_markup
+                                # u'<p>I just "love" Microsoft Word\'s smart quotes</p>'
+
+'''
+Hopefully you’ll find this feature useful, but Beautiful Soup doesn’t use it. Beautiful Soup prefers the 
+default behavior, which is to convert Microsoft smart quotes to Unicode characters along with everything else:
+'''
+UnicodeDammit(markup, ["windows-1252"]).unicode_markup
+                                # u'<p>I just \u201clove\u201d Microsoft Word\u2019s smart quotes</p>'
+                                # On VSCode/OSX: '<p>I just “love” Microsoft Word’s smart quotes</p>'
+
+#endregion - Unicode, Dammit - Smart quotes
+
+#region Unicode, Dammit - Inconsistent encodings
+'''
+https://www.crummy.com/software/BeautifulSoup/bs4/doc/#inconsistent-encodings
+
+Sometimes a document is mostly in UTF-8, but contains Windows-1252 characters such as (again) Microsoft 
+smart quotes. This can happen when a website includes data from multiple sources. You can use 
+UnicodeDammit.detwingle() to turn such a document into pure UTF-8. Here’s a simple example:
+'''
+snowmen = (u"\N{SNOWMAN}" * 3)
+quote = (u"\N{LEFT DOUBLE QUOTATION MARK}I like snowmen!\N{RIGHT DOUBLE QUOTATION MARK}")
+doc = snowmen.encode("utf8") + quote.encode("windows_1252")
+
+'''
+This document is a mess. The snowmen are in UTF-8 and the quotes are in Windows-1252. 
+You can display the snowmen or the quotes, but not both:
+'''
+doc                              # ☃☃☃�I like snowmen!�          - different on VSCode/OSX
+doc.decode("windows-1252")       # â˜ƒâ˜ƒâ˜ƒ“I like snowmen!”
+
+'''
+Decoding the document as UTF-8 raises a UnicodeDecodeError, and decoding it as Windows-1252 gives 
+you gibberish. Fortunately, UnicodeDammit.detwingle() will convert the string to pure UTF-8, allowing 
+you to decode it to Unicode and display the snowmen and quote marks simultaneously:
+'''
+new_doc = UnicodeDammit.detwingle(doc)
+new_doc.decode("utf8")           # ☃☃☃“I like snowmen!”
+
+'''
+UnicodeDammit.detwingle() only knows how to handle Windows-1252 embedded in UTF-8 (or vice versa, 
+I suppose), but this is the most common case.
+
+Note that you must know to call UnicodeDammit.detwingle() on your data before passing it into 
+BeautifulSoup or the UnicodeDammit constructor. Beautiful Soup assumes that a document has a single 
+encoding, whatever it might be. If you pass it a document that contains both UTF-8 and Windows-1252, 
+it’s likely to think the whole document is Windows-1252, and the document will come out looking 
+like â˜ƒâ˜ƒâ˜ƒ“I like snowmen!”.
+
+UnicodeDammit.detwingle() is new in Beautiful Soup 4.1.0.
+'''
+#endregion - Unicode, Dammit - Inconsistent encodings
+
 #endregion - Encodings
 
+
 #region Comparing objects for equality
-# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#comparing-objects-for-equality
+'''
+https://www.crummy.com/software/BeautifulSoup/bs4/doc/#comparing-objects-for-equality
+
+Beautiful Soup says that two NavigableString or Tag objects are equal when they represent the same HTML 
+or XML markup. In this example, the two <b> tags are treated as equal, even though they live in different 
+parts of the object tree, because they both look like “<b>pizza</b>”:
+'''
+markup = "<p>I want <b>pizza</b> and more <b>pizza</b>!</p>"
+soup = BeautifulSoup(markup, 'html.parser')
+
+first_b, second_b = soup.find_all('b')
+
+first_b == second_b                                      # True
+first_b.previous_element == second_b.previous_element    # False
+
+'''
+If you want to see whether two variables refer to exactly the same object, use is:
+'''
+first_b is second_b                                      # False
+
 #endregion - Comparing objects for equality
 
+
 #region Copying Beautiful Soup objects
-# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#copying-beautiful-soup-objects
+'''
+https://www.crummy.com/software/BeautifulSoup/bs4/doc/#copying-beautiful-soup-objects
+
+You can use copy.copy() to create a copy of any Tag or NavigableString:
+'''
+import copy
+p_copy = copy.copy(soup.p)
+p_copy                      # <p>I want <b>pizza</b> and more <b>pizza</b>!</p>
+
+'''
+The copy is considered equal to the original, since it represents the same markup as the original, 
+but it’s not the same object:
+'''
+soup.p == p_copy            # True
+soup.p is p_copy            # False
+
+'''
+The only real difference is that the copy is completely detached from the original Beautiful Soup 
+object tree, just as if extract() had been called on it:
+'''
+p_copy.parent               # None
+
+'''
+This is because two different Tag objects can’t occupy the same space at the same time.
+'''
 #endregion - Copying Beautiful Soup objects
 
+
 #region Parsing only part of a document
-# https://www.crummy.com/software/BeautifulSoup/bs4/doc/#parsing-only-part-of-a-document
+'''
+https://www.crummy.com/software/BeautifulSoup/bs4/doc/#parsing-only-part-of-a-document
+
+Let’s say you want to use Beautiful Soup look at a document’s <a> tags. It’s a waste of time and memory 
+to parse the entire document and then go over it again looking for <a> tags. It would be much faster to 
+ignore everything that wasn’t an <a> tag in the first place. The SoupStrainer class allows you to choose 
+which parts of an incoming document are parsed. You just create a SoupStrainer and pass it in to the 
+BeautifulSoup constructor as the parse_only argument.
+
+(Note that this feature won’t work if you’re using the html5lib parser. If you use html5lib, the whole 
+document will be parsed, no matter what. This is because html5lib constantly rearranges the parse tree 
+as it works, and if some part of the document didn’t actually make it into the parse tree, it’ll crash. 
+To avoid confusion, in the examples below I’ll be forcing Beautiful Soup to use Python’s built-in parser.)
+'''
+
+#region SoupStrainer
+'''
+https://www.crummy.com/software/BeautifulSoup/bs4/doc/#soupstrainer
+
+The SoupStrainer class takes the same arguments as a typical method from Searching the tree: 
+name, attrs, string, and **kwargs. Here are three SoupStrainer objects:
+'''
+from bs4 import SoupStrainer
+
+only_a_tags = SoupStrainer("a")
+
+only_tags_with_id_link2 = SoupStrainer(id="link2")
+
+
+def is_short_string(s):
+    return len(s) < 10
+
+only_short_strings = SoupStrainer(string=is_short_string)
+
+'''
+I’m going to bring back the “three sisters” document one more time, and we’ll see what the document 
+looks like when it’s parsed with these three SoupStrainer objects:
+'''
+BeautifulSoup(html_doc, "html.parser", parse_only=only_a_tags).prettify()
+BeautifulSoup(html_doc, "html.parser", parse_only=only_tags_with_id_link2).prettify()
+
+'''
+NOTE: This doesn't work - looking at the parameter values is_short_strings, the values are None
+'''
+# BeautifulSoup(html_doc, "html.parser", parse_only=only_short_strings).prettify()
+
+'''
+You can also pass a SoupStrainer into any of the methods covered in Searching the tree. 
+This probably isn’t terribly useful, but I thought I’d mention it:
+
+NOTE: Same as above, is_short_strings is only taking in None values
+WORKAROUND: https://python-forum.io/Thread-SoupStrainer-example
+'''
+# soup = BeautifulSoup(html_doc)
+# soup.find_all(only_short_strings)
+
+
+#endregion - SoupStrainer
+
 #endregion - Parsing only part of a document
 
 #region Troubleshooting
