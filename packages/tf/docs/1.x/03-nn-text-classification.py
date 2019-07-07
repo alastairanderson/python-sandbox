@@ -22,7 +22,7 @@ tensorflow
 matplotlib
 
 # keras.datasets.imdb is broken in 1.13 and 1.14, by np 1.16.3
-!pip install -q tf_nightly
+pip install tf_nightly
 '''
 #region imports
 from __future__ import absolute_import, division, print_function, unicode_literals
