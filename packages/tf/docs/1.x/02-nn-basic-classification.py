@@ -15,10 +15,15 @@ from tensorflow import keras
 # Helper libraries
 import numpy as np
 import matplotlib.pyplot as plt
-#endregion - imports
 
 print(tf.__version__)
+#endregion - imports
 
+#region Settings
+SHOW_PLOTS = False
+#endregion - Settings
+
+#region Retrieve the data
 '''
 Import the Fashion MNIST dataset
 https://www.tensorflow.org/tutorials/keras/basic_classification#import_the_fashion_mnist_dataset
@@ -37,7 +42,9 @@ fashion_mnist = keras.datasets.fashion_mnist
 class_names = ['T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat',
                'Sandal', 'Shirt', 'Sneaker', 'Bag', 'Ankle boot']
 
+#endregion - Retrieve the data
 
+#region Explore the data
 '''
 Explore the data
 https://www.tensorflow.org/tutorials/keras/basic_classification#explore_the_data
@@ -47,7 +54,9 @@ print(len(train_labels))                # 60000
 print(train_labels)                     # array([9, 0, 0, ..., 3, 0, 5], dtype=uint8)
 print(test_images.shape)                # (10000, 28, 28)
 print(len(test_labels))                 # 10000
+#endregion - Explore the data
 
+#region Prepare the data
 '''
 Preprocess the data
 https://www.tensorflow.org/tutorials/keras/basic_classification#preprocess_the_data
@@ -59,7 +68,8 @@ plt.figure()
 plt.imshow(train_images[0])
 plt.colorbar()
 plt.grid(False)
-plt.show()
+if SHOW_PLOTS:
+    plt.show()
 
 '''
 We scale these values to a range of 0 to 1 before feeding to the neural network model. For this, we divide 
@@ -80,8 +90,11 @@ for i in range(25):
     plt.grid(False)
     plt.imshow(train_images[i], cmap=plt.cm.binary)
     plt.xlabel(class_names[train_labels[i]])
-plt.show()
+if SHOW_PLOTS:
+    plt.show()
+#endregion - Prepare the data
 
+#region Build the model
 '''
 Build the model
 https://www.tensorflow.org/tutorials/keras/basic_classification#build_the_model
@@ -126,8 +139,9 @@ The first Dense layer has 128 nodes (or neurons).
 The second (and last) layer is a 10-node softmax layer—this returns an array of 10 probability scores that sum to 1. 
 Each node contains a score that indicates the probability that the current image belongs to one of the 10 classes.
 '''
+#endregion - Build the model
 
-
+#region Compile the model
 '''
 Compile the model
 https://www.tensorflow.org/tutorials/keras/basic_classification#compile_the_model
@@ -146,7 +160,9 @@ These are added during the model's compile step:
 model.compile(optimizer='adam',
               loss='sparse_categorical_crossentropy',
               metrics=['accuracy'])
+#endregion - Compile the model
 
+#region Train the model
 '''
 Train the model
 https://www.tensorflow.org/tutorials/keras/basic_classification#train_the_model
@@ -166,7 +182,9 @@ model.fit(train_images, train_labels, epochs=5)
 As the model trains, the loss and accuracy metrics are displayed. This model reaches an accuracy of 
 about 0.88 (or 88%) on the training data.
 '''
+#endregion - Train the model
 
+#region Evaluate accuracy
 '''
 Evaluate accuracy
 https://www.tensorflow.org/tutorials/keras/basic_classification#evaluate_accuracy
@@ -182,7 +200,9 @@ the accuracy on the test dataset is a little less than the accuracy on the train
 This gap between training accuracy and test accuracy is an example of overfitting. 
 Overfitting is when a machine learning model performs worse on new data than on their training data.
 '''
+#endregion - Evaluate accuracy
 
+#region Make predictions
 '''
 Make predictions
 https://www.tensorflow.org/tutorials/keras/basic_classification#make_predictions
@@ -254,7 +274,8 @@ plt.subplot(1,2,1)
 plot_image(i, predictions, test_labels, test_images)
 plt.subplot(1,2,2)
 plot_value_array(i, predictions,  test_labels)
-plt.show()
+if SHOW_PLOTS:
+    plt.show()
 
 i = 12
 plt.figure(figsize=(6,3))
@@ -262,7 +283,8 @@ plt.subplot(1,2,1)
 plot_image(i, predictions, test_labels, test_images)
 plt.subplot(1,2,2)
 plot_value_array(i, predictions,  test_labels)
-plt.show()
+if SHOW_PLOTS:
+    plt.show()
 
 # Plot the first X test images, their predicted label, and the true label
 # Color correct predictions in blue, incorrect predictions in red
@@ -275,7 +297,8 @@ for i in range(num_images):
     plot_image(i, predictions, test_labels, test_images)
     plt.subplot(num_rows, 2*num_cols, 2*i+2)
     plot_value_array(i, predictions, test_labels)
-plt.show()
+if SHOW_PLOTS:
+    plt.show()
 
 '''
 Finally, use the trained model to make a prediction about a single image.
@@ -299,7 +322,8 @@ print(predictions_single)
 
 plot_value_array(0, predictions_single, test_labels)
 plt.xticks(range(10), class_names, rotation=45)
-plt.show()
+if SHOW_PLOTS:
+    plt.show()
 
 '''
 model.predict returns a list of lists, one for each image in the batch of data. 
@@ -307,3 +331,4 @@ Grab the predictions for our (only) image in the batch:
 '''
 prediction_result = np.argmax(predictions_single[0])
 print(prediction_result)
+#endregion - Make predictions
