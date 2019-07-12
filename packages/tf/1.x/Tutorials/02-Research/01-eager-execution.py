@@ -16,6 +16,9 @@ a more interactive frontend to TensorFlow, the details of which we will discuss 
 from __future__ import absolute_import, division, print_function
 
 import tensorflow as tf
+import numpy as np
+
+import time
 
 tf.enable_eager_execution()
 #endregion - imports
@@ -75,8 +78,6 @@ representation if possible. However, sharing the underlying representation isn't
 possible since the Tensor may be hosted in GPU memory while NumPy arrays are always backed by 
 host memory, and the conversion will thus involve a copy from GPU to host memory.
 '''
-import numpy as np
-
 ndarray = np.ones([3, 3])
 
 print("TensorFlow operations convert numpy arrays to Tensors automatically")
@@ -106,7 +107,7 @@ x = tf.random_uniform([3, 3])
 print("Is there a GPU available: "),
 print(tf.test.is_gpu_available())
 
-print("Is the Tensor on GPU #0:  "),
+print("Is the Tensor on GPU #0: "),
 print(x.device.endswith('GPU:0'))
 #endregion - GPU acceleration
 
@@ -136,8 +137,6 @@ tf.device context manager. For example:
 
 https://www.tensorflow.org/api_docs/python/tf/device
 '''
-import time
-
 def time_matmul(x):
     start = time.time()
     for loop in range(10):
@@ -202,7 +201,6 @@ Dataset.from_tensor_slices - https://www.tensorflow.org/api_docs/python/tf/compa
 TextLineDataset            - https://www.tensorflow.org/api_docs/python/tf/data/TextLineDataset
 TFRecordDataset            - https://www.tensorflow.org/api_docs/python/tf/data/TFRecordDataset
 '''
-#endregion - Create a source Dataset
 ds_tensors = tf.data.Dataset.from_tensor_slices([1, 2, 3, 4, 5, 6])
 
 # Create a CSV file
@@ -211,11 +209,12 @@ _, filename = tempfile.mkstemp()
 
 with open(filename, 'w') as f:
     f.write("""Line 1
-            Line 2
-            Line 3
-            """)
+Line 2
+Line 3
+""")
 
 ds_file = tf.data.TextLineDataset(filename)
+#endregion - Create a source Dataset
 
 #region Apply transformations
 '''
@@ -229,12 +228,33 @@ map     - https://www.tensorflow.org/api_docs/python/tf/data/Dataset#map
 batch   - https://www.tensorflow.org/api_docs/python/tf/data/Dataset#batch
 shuffle - https://www.tensorflow.org/api_docs/python/tf/data/Dataset#shuffle
 '''
+ds_tensors = ds_tensors.map(tf.square).shuffle(2).batch(2)      
+# type(ds_tensors) == <DatasetV1Adapter shapes: (?,), types: tf.int32>
+
+ds_file = ds_file.batch(2)
+# type(ds_file) == <class 'tensorflow.python.data.ops.dataset_ops.DatasetV1Adapter'>
+
 #endregion - Apply transformations
 
 #region Iterate
 '''
 Iterate
+https://www.tensorflow.org/tutorials/eager/eager_basics#iterate
 
+When eager execution is enabled Dataset objects support iteration. If you're familiar with the 
+use of Datasets in TensorFlow graphs, note that there is no need for calls to 
+Dataset.make_one_shot_iterator() or get_next() calls.
+
+Dataset.make_one_shot_iterator() - https://www.tensorflow.org/api_docs/python/tf/data/Dataset#make_one_shot_iterator
 '''
+print('\nElements of ds_tensors:')
+for x in ds_tensors:
+  print(x)
+
+print('\nElements in ds_file:')
+for x in ds_file:
+  print(x)
+
 #endregion - Iterate
+
 #endregion - Datasets

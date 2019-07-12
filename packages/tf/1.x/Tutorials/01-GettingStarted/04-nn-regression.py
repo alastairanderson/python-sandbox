@@ -47,7 +47,7 @@ print(tf.__version__)
 #endregion - imports
 
 #region Settings
-SHOW_PLOTS = False
+SHOW_PLOTS = True
 #endregion - Settings
 
 #region Retrieve the data
@@ -188,6 +188,9 @@ def build_model():
         layers.Dense(1)
     ])
 
+    '''
+    https://keras.io/optimizers/
+    '''
     optimizer = tf.keras.optimizers.RMSprop(0.001)
 
     model.compile(loss='mean_squared_error',
@@ -228,6 +231,12 @@ class PrintDot(keras.callbacks.Callback):
         if epoch % 100 == 0: print('')
         print('.', end='')
 
+'''
+The number of epochs is a hyperparameter that defines the number times that the learning algorithm 
+will work through the entire training dataset
+
+https://machinelearningmastery.com/difference-between-a-batch-and-an-epoch/
+'''
 EPOCHS = 1000
 
 history = model.fit(normed_train_data, train_labels,
