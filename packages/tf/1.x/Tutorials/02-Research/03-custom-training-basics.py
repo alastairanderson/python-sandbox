@@ -104,7 +104,7 @@ Let's define a simple class to encapsulate the variables and the computation.
 This simple class is linear regression, the equation of a straight line:
     y = mx + c
 
-or re-written as:
+or re-written in ML terms as:
     y = Wx + b
 '''
 class Model(object):
@@ -119,7 +119,7 @@ class Model(object):
 
 model = Model()
 
-assert model(3.0).numpy() == 15.0           # True
+assert model(3.0).numpy() == 15.0           # True - simple test to check the defaults work
 
 #endregion - Define the model
 
