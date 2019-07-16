@@ -185,7 +185,69 @@ class ResnetIdentityBlock(tf.keras.Model):
 
 block = ResnetIdentityBlock(1, [1, 2, 3])
 print(block(tf.zeros([1, 2, 3, 3])))
+
+'''
+tf.Tensor(
+    [[[[0. 0. 0.]
+       [0. 0. 0.]
+       [0. 0. 0.]]
+
+      [[0. 0. 0.]
+       [0. 0. 0.]
+       [0. 0. 0.]]]], 
+       shape=(1, 2, 3, 3), dtype=float32
+   )
+'''
+
 print([x.name for x in block.trainable_variables])
 
+'''
+[
+    'resnet_identity_block/conv2d/kernel:0', 
+    'resnet_identity_block/conv2d/bias:0', 
+    'resnet_identity_block/batch_normalization/gamma:0', 
+    'resnet_identity_block/batch_normalization/beta:0', 
 
+    'resnet_identity_block/conv2d_1/kernel:0', 
+    'resnet_identity_block/conv2d_1/bias:0', 
+    'resnet_identity_block/batch_normalization_1/gamma:0', 
+    'resnet_identity_block/batch_normalization_1/beta:0', 
+    
+    'resnet_identity_block/conv2d_2/kernel:0', 
+    'resnet_identity_block/conv2d_2/bias:0', 
+    'resnet_identity_block/batch_normalization_2/gamma:0', 
+    'resnet_identity_block/batch_normalization_2/beta:0'
+]
+'''
+
+'''
+Much of the time, however, models which compose many layers simply call one layer 
+after the other. This can be done in very little code using tf.keras.Sequential
+'''
+my_seq = tf.keras.Sequential([tf.keras.layers.Conv2D(1, (1, 1)),
+                              tf.keras.layers.BatchNormalization(),
+                              tf.keras.layers.Conv2D(2, 1, padding='same'),
+                              tf.keras.layers.BatchNormalization(),
+                              tf.keras.layers.Conv2D(3, (1, 1)),
+                              tf.keras.layers.BatchNormalization()])
+
+my_seq(tf.zeros([1, 2, 3, 3]))
+
+'''
+<tf.Tensor: id=514, shape=(1, 2, 3, 3), dtype=float32, numpy=
+    array([[[[0., 0., 0.],
+             [0., 0., 0.],
+             [0., 0., 0.]],
+
+            [[0., 0., 0.],
+             [0., 0., 0.],
+             [0., 0., 0.]]]], dtype=float32)>
+'''
 #endregion - Models: composing layers
+
+#region Next steps
+'''
+Now you can go back to the previous notebook and adapt the linear regression example to use 
+layers and models to be better structured.
+'''
+#endregion - Next steps
