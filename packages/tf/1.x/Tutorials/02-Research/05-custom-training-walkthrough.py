@@ -441,12 +441,123 @@ def loss(model, x, y):
 l = loss(model, features, labels)
 print("Loss test: {}".format(l))
 
+'''
+    Use the tf.GradientTape context to calculate the gradients used to optimize our model. For more examples of 
+    this, see the eager execution guide.
+
+    tf.GradientTape       - https://www.tensorflow.org/api_docs/python/tf/GradientTape
+    gradients             - https://developers.google.com/machine-learning/crash-course/glossary#gradient
+    eager execution guide - https://www.tensorflow.org/guide/eager
+'''
+def grad(model, inputs, targets):
+    with tf.GradientTape() as tape:
+        loss_value = loss(model, inputs, targets)
+    return loss_value, tape.gradient(loss_value, model.trainable_variables)
+
 #endregion - Define the loss and gradient function
 
 #region Create an optimizer
+'''
+    Create an optimizer
+    https://www.tensorflow.org/tutorials/eager/custom_training_walkthrough#create_an_optimizer
+
+    An optimizer applies the computed gradients to the model's variables to minimize the loss function. 
+    You can think of the loss function as a curved surface (see Figure 3) and we want to find its lowest 
+    point by walking around. The gradients point in the direction of steepest ascent—so we'll travel the 
+    opposite way and move down the hill. By iteratively calculating the loss and gradient for each batch, 
+    we'll adjust the model during training. Gradually, the model will find the best combination of weights 
+    and bias to minimize loss. And the lower the loss, the better the model's predictions.
+
+    optimiser - https://developers.google.com/machine-learning/crash-course/glossary#optimizer
+
+    TensorFlow has many optimization algorithms available for training. This model uses the 
+    tf.train.GradientDescentOptimizer that implements the stochastic gradient descent (SGD) algorithm. 
+    The learning_rate sets the step size to take for each iteration down the hill. This is a hyperparameter 
+    that you'll commonly adjust to achieve better results.
+
+    optimization algorithms  - https://www.tensorflow.org/api_guides/python/train
+    GradientDescentOptimizer - https://www.tensorflow.org/api_docs/python/tf/train/GradientDescentOptimizer
+    stochastic gradient descent - https://developers.google.com/machine-learning/crash-course/glossary#gradient_descent
+
+    Setup the optimizer and the global_step counter:
+'''
+optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.01)
+
+global_step = tf.Variable(0)
+
+'''
+    Use this to calculate a single optimization step:
+'''
+loss_value, grads = grad(model, features, labels)
+
+print("Step: {}, Initial Loss: {}".format(global_step.numpy(),
+                                          loss_value.numpy()))
+
+optimizer.apply_gradients(zip(grads, model.trainable_variables), global_step)
+
+print("Step: {},         Loss: {}".format(global_step.numpy(),
+                                          loss(model, features, labels).numpy()))
 #endregion - Create an optimizer
 
 #region Training loop
+'''
+    Training loop
+    https://www.tensorflow.org/tutorials/eager/custom_training_walkthrough#training_loop
+
+    With all the pieces in place, the model is ready for training! A training loop feeds the 
+    dataset examples into the model to help it make better predictions. The following code 
+    block sets up these training steps:
+
+        1. Iterate each epoch. An epoch is one pass through the dataset.
+        2. Within an epoch, iterate over each example in the training Dataset grabbing its 
+        features (x) and label (y).
+        3. Using the example's features, make a prediction and compare it with the label. 
+        Measure the inaccuracy of the prediction and use that to calculate the model's loss 
+        and gradients.
+        4. Use an optimizer to update the model's variables.
+        5. Keep track of some stats for visualization.
+        6. Repeat for each epoch.
+
+    The num_epochs variable is the number of times to loop over the dataset collection. 
+    Counter-intuitively, training a model longer does not guarantee a better model. num_epochs 
+    is a hyperparameter that you can tune. Choosing the right number usually requires both 
+    experience and experimentation.
+'''
+## Note: Rerunning this cell uses the same model variables
+
+from tensorflow import contrib
+tfe = contrib.eager
+
+# keep results for plotting
+train_loss_results = []
+train_accuracy_results = []
+
+num_epochs = 201
+
+for epoch in range(num_epochs):
+    epoch_loss_avg = tfe.metrics.Mean()
+    epoch_accuracy = tfe.metrics.Accuracy()
+
+    # Training loop - using batches of 32
+    for x, y in train_dataset:
+        # Optimize the model
+        loss_value, grads = grad(model, x, y)
+        optimizer.apply_gradients(zip(grads, model.trainable_variables),
+                                global_step)
+
+        # Track progress
+        epoch_loss_avg(loss_value)  # add current batch loss
+        # compare predicted label to actual label
+        epoch_accuracy(tf.argmax(model(x), axis=1, output_type=tf.int32), y)
+
+    # end epoch
+    train_loss_results.append(epoch_loss_avg.result())
+    train_accuracy_results.append(epoch_accuracy.result())
+
+    if epoch % 50 == 0:
+        print("Epoch {:03d}: Loss: {:.3f}, Accuracy: {:.3%}".format(epoch,
+                                                                    epoch_loss_avg.result(),
+                                                                    epoch_accuracy.result()))
 #endregion - Training loop
 
 #region Visualize the loss function over time
