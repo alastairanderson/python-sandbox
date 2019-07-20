@@ -558,9 +558,166 @@ for epoch in range(num_epochs):
         print("Epoch {:03d}: Loss: {:.3f}, Accuracy: {:.3%}".format(epoch,
                                                                     epoch_loss_avg.result(),
                                                                     epoch_accuracy.result()))
+'''
+    Epoch 000: Loss: 1.253, Accuracy: 52.500%
+    Epoch 050: Loss: 0.481, Accuracy: 85.833%
+    Epoch 100: Loss: 0.335, Accuracy: 93.333%
+    Epoch 150: Loss: 0.244, Accuracy: 91.667%
+    Epoch 200: Loss: 0.188, Accuracy: 95.000%
+'''
 #endregion - Training loop
 
 #region Visualize the loss function over time
-#endregion - Visualize the loss function over time
+'''
+    Visualize the loss function over time
+    https://www.tensorflow.org/tutorials/eager/custom_training_walkthrough#visualize_the_loss_function_over_time
 
+    While it's helpful to print out the model's training progress, it's often more helpful to see this progress. 
+    TensorBoard is a nice visualization tool that is packaged with TensorFlow, but we can create basic charts 
+    using the matplotlib module.
+
+    Interpreting these charts takes some experience, but you really want to see the loss go down and the accuracy 
+    go up.
+
+    TensorBoard - https://www.tensorflow.org/guide/summaries_and_tensorboard
+'''
+fig, axes = plt.subplots(2, sharex=True, figsize=(12, 8))
+fig.suptitle('Training Metrics')
+
+axes[0].set_ylabel("Loss", fontsize=14)
+axes[0].plot(train_loss_results)
+
+axes[1].set_ylabel("Accuracy", fontsize=14)
+axes[1].set_xlabel("Epoch", fontsize=14)
+axes[1].plot(train_accuracy_results)
+plt.show()
+#endregion - Visualize the loss function over time
 #endregion - Train the model
+
+#region Evaluate the model's effectiveness
+'''
+    Evaluate the model's effectiveness
+    https://www.tensorflow.org/tutorials/eager/custom_training_walkthrough#evaluate_the_models_effectiveness
+
+    Now that the model is trained, we can get some statistics on its performance.
+
+    Evaluating means determining how effectively the model makes predictions. To determine the model's 
+    effectiveness at Iris classification, pass some sepal and petal measurements to the model and ask 
+    the model to predict what Iris species they represent. Then compare the model's prediction against 
+    the actual label. For example, a model that picked the correct species on half the input examples 
+    has an accuracy of 0.5. Figure 4 shows a slightly more effective model, getting 4 out of 5 predictions 
+    correct at 80% accuracy:
+
+    accuracy - https://developers.google.com/machine-learning/glossary/#accuracy
+'''
+
+#region Setup the test dataset
+'''
+    Setup the test dataset
+    https://www.tensorflow.org/tutorials/eager/custom_training_walkthrough#setup_the_test_dataset
+
+    Evaluating the model is similar to training the model. The biggest difference is the examples come 
+    from a separate test set rather than the training set. To fairly assess a model's effectiveness, the 
+    examples used to evaluate a model must be different from the examples used to train the model.
+
+    The setup for the test Dataset is similar to the setup for training Dataset. Download the CSV text 
+    file and parse that values, then give it a little shuffle:
+
+    test set - https://developers.google.com/machine-learning/crash-course/glossary#test_set
+'''
+test_url = "https://storage.googleapis.com/download.tensorflow.org/data/iris_test.csv"
+
+test_fp = tf.keras.utils.get_file(fname=os.path.basename(test_url),
+                                  origin=test_url)
+
+test_dataset = tf.contrib.data.make_csv_dataset(test_fp,
+                                                batch_size,
+                                                column_names=column_names,
+                                                label_name='species',
+                                                num_epochs=1,
+                                                shuffle=False)
+
+test_dataset = test_dataset.map(pack_features_vector)
+
+#endregion - Setup the test dataset
+
+#region Evaluate the model on the test dataset
+'''
+    Evaluate the model on the test dataset
+    https://www.tensorflow.org/tutorials/eager/custom_training_walkthrough#evaluate_the_model_on_the_test_dataset
+
+    Unlike the training stage, the model only evaluates a single epoch of the test data. In the following code cell, 
+    we iterate over each example in the test set and compare the model's prediction against the actual label. This 
+    is used to measure the model's accuracy across the entire test set.
+
+    epoch - https://developers.google.com/machine-learning/glossary/#epoch
+'''
+test_accuracy = tfe.metrics.Accuracy()
+
+for (x, y) in test_dataset:
+    logits = model(x)
+    prediction = tf.argmax(logits, axis=1, output_type=tf.int32)
+    test_accuracy(prediction, y)
+
+print("Test set accuracy: {:.3%}".format(test_accuracy.result()))
+'''
+    Test set accuracy: 96.667%
+
+    We can see on the last batch, for example, the model is usually correct:
+'''
+tf.stack([y,prediction],axis=1)
+
+'''
+    <tf.Tensor: id=105687, shape=(30, 2), dtype=int32, numpy=
+        array([[1, 1],
+               [2, 2],
+               [0, 0],
+               [1, 1],
+               [1, 1],
+               [1, 1], 
+               ...
+               [1, 1]], dtype=int32)>
+'''
+#endregion - Evaluate the model on the test dataset
+
+#region Use the trained model to make predictions
+'''
+    Use the trained model to make predictions
+    https://www.tensorflow.org/tutorials/eager/custom_training_walkthrough#use_the_trained_model_to_make_predictions
+
+    We've trained a model and "proven" that it's good—but not perfect—at classifying Iris species. Now let's use the 
+    trained model to make some predictions on unlabeled examples; that is, on examples that contain features but not 
+    a label.
+
+    In real-life, the unlabeled examples could come from lots of different sources including apps, CSV files, and 
+    data feeds. For now, we're going to manually provide three unlabeled examples to predict their labels. Recall, 
+    the label numbers are mapped to a named representation as:
+
+        0: Iris setosa
+        1: Iris versicolor
+        2: Iris virginica
+
+    unlabeled examples - https://developers.google.com/machine-learning/glossary/#unlabeled_example
+'''
+predict_dataset = tf.convert_to_tensor([
+    [5.1, 3.3, 1.7, 0.5,],
+    [5.9, 3.0, 4.2, 1.5,],
+    [6.9, 3.1, 5.4, 2.1]
+])
+
+predictions = model(predict_dataset)
+
+for i, logits in enumerate(predictions):
+    class_idx = tf.argmax(logits).numpy()
+    p = tf.nn.softmax(logits)[class_idx]
+    name = class_names[class_idx]
+    print("Example {} prediction: {} ({:4.1f}%)".format(i, name, 100*p))
+
+'''
+Example 0 prediction: Iris setosa (97.6%)
+Example 1 prediction: Iris versicolor (89.3%)
+Example 2 prediction: Iris virginica (50.1%)
+'''
+
+#endregion - Use the trained model to make predictions
+#endregion - Evaluate the model's effectiveness
