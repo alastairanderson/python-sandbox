@@ -1,0 +1,5 @@
+tensorflow==1.14.0
+matplotlib==3.1.1
+IPython==7.6.1
+requests==2.22.0
+pandas==0.25.0
