@@ -3,15 +3,11 @@
     https://www.tensorflow.org/tutorials/estimators/linear
 
     This tutorial uses the tf.estimator API in TensorFlow to solve a benchmark binary classification 
-    problem. Estimators are TensorFlow's most scalable and production-oriented model type. For more 
-    information see the Estimator guide.
-
-    tf.estimator    - https://www.tensorflow.org/api_docs/python/tf/estimator
-    Estimator guide - https://www.tensorflow.org/guide/estimators
-
-
-    Overview
-    https://www.tensorflow.org/tutorials/estimators/linear#overview
+    problem: https://www.tensorflow.org/api_docs/python/tf/estimator
+    
+    Estimators are TensorFlow's most scalable and production-oriented model type. 
+    
+    For more information see the Estimator guide: https://www.tensorflow.org/guide/estimators
 
     Using census data which contains data a person's age, education, marital status, and occupation 
     (the features), we will try to predict whether or not the person earns more than 50,000 dollars 
@@ -49,7 +45,7 @@ import sys
 import matplotlib.pyplot as plt
 from IPython.display import clear_output
 
-tf.enable_eager_execution()                     # https://www.tensorflow.org/guide/eager
+tf.enable_eager_execution()             # https://www.tensorflow.org/guide/eager
 #endregion - Setup
 
 #region Download the official implementation
@@ -81,13 +77,13 @@ census_dataset.download("/tmp/census_data/")
 
 #region Command line usage
 '''
-Command line usage
-https://www.tensorflow.org/tutorials/estimators/linear#command_line_usage
+    Command line usage
+    https://www.tensorflow.org/tutorials/estimators/linear#command_line_usage
 
-The repo includes a complete program for experimenting with this type of model.
+    The repo includes a complete program for experimenting with this type of model.
 
-To execute the tutorial code from the command line first add the path to tensorflow/models 
-to your PYTHONPATH.
+    To execute the tutorial code from the command line first add the path to tensorflow/models 
+    to your PYTHONPATH.
 '''
 #export PYTHONPATH=${PYTHONPATH}:"$(pwd)/models"
 #running from python you need to set the `os.environ` or the subprocess will not see the directory.
@@ -150,15 +146,14 @@ test_df = pandas.read_csv(test_file, header = None, names = census_dataset._CSV_
 
 print(train_df.head())
 '''
-The columns are grouped into two types: categorical and continuous columns:
+    The columns are grouped into two types: categorical and continuous columns:
 
-    A column is called categorical if its value can only be one of the categories in a finite set. 
-    For example, the relationship status of a person (wife, husband, unmarried, etc.) or the 
-    education level (high school, college, etc.) are categorical columns.
+        A column is called categorical if its value can only be one of the categories in a finite set. 
+        For example, the relationship status of a person (wife, husband, unmarried, etc.) or the 
+        education level (high school, college, etc.) are categorical columns.
 
-    A column is called continuous if its value can be any numerical value in a continuous range. 
-    For example, the capital gain of a person (e.g. $14,084) is a continuous column.
-
+        A column is called continuous if its value can be any numerical value in a continuous range. 
+        For example, the capital gain of a person (e.g. $14,084) is a continuous column.
 '''
 #endregion - Read the U.S. Census data
 
@@ -326,8 +321,192 @@ test_inpf = functools.partial(census_dataset.input_fn, test_file, num_epochs=1, 
 '''
 age = fc.numeric_column('age')
 
+'''
+    The model will use the feature_column definitions to build the model input. You can inspect the 
+    resulting output using the input_layer function:
+'''
+print(fc.input_layer(feature_batch, [age]).numpy())
+'''
+    [[18.]
+    [45.]
+    [23.]
+    [17.]
+    [32.]
+    [38.]
+    [37.]
+    [54.]
+    [25.]
+    [71.]]
 
+    The following will train and evaluate a model using only the age feature:
+'''
+classifier = tf.estimator.LinearClassifier(feature_columns=[age])
+classifier.train(train_inpf)
+result = classifier.evaluate(test_inpf)
+
+clear_output()  # used for display in notebook
+print(result)
+'''
+    {
+        'precision': 0.1780822, 
+        'label/mean': 0.23622628, 
+        'accuracy_baseline': 0.76377374, 
+        'prediction/mean': 0.23925366, 
+        'auc': 0.6783024, 
+        'loss': 33.404175, 
+        'recall': 0.0033801352, 
+        'average_loss': 0.5231905, 
+        'auc_precision_recall': 0.31137863, 
+        'accuracy': 0.7608869, 
+        'global_step': 1018
+    }
+
+    Similarly, we can define a NumericColumn for each continuous feature column that we want to 
+    use in the model:
+'''
+education_num = tf.feature_column.numeric_column('education_num')
+capital_gain = tf.feature_column.numeric_column('capital_gain')
+capital_loss = tf.feature_column.numeric_column('capital_loss')
+hours_per_week = tf.feature_column.numeric_column('hours_per_week')
+
+my_numeric_columns = [age,education_num, capital_gain, capital_loss, hours_per_week]
+
+print(fc.input_layer(feature_batch, my_numeric_columns).numpy())
+'''
+    array([[3.500e+01, 0.000e+00, 0.000e+00, 1.100e+01, 4.000e+01],
+        [4.800e+01, 0.000e+00, 0.000e+00, 5.000e+00, 4.000e+01],
+            ...
+        [4.400e+01, 4.386e+03, 0.000e+00, 1.400e+01, 4.000e+01]],
+        dtype=float32)
+
+    You could retrain a model on these features by changing the feature_columns argument 
+    to the constructor:
+'''
+classifier = tf.estimator.LinearClassifier(feature_columns=my_numeric_columns)
+classifier.train(train_inpf)
+
+result = classifier.evaluate(test_inpf)
+
+clear_output()      # used for display in notebook
+
+for key,value in sorted(result.items()):
+    print('%s: %s' % (key, value))
+'''
+    accuracy: 0.78391993
+    accuracy_baseline: 0.76377374
+    auc: 0.68254405
+    auc_precision_recall: 0.5000775
+    average_loss: 0.991552
+    global_step: 1018
+    label/mean: 0.23622628
+    loss: 63.30768
+    precision: 0.6261538
+    prediction/mean: 0.21659191
+    recall: 0.21164846
+'''
 #endregion - Numeric columns
+
+#region Categorical columns
+'''
+    Categorical columns
+    https://www.tensorflow.org/tutorials/estimators/linear#categorical_columns
+
+    To define a feature column for a categorical feature, create a CategoricalColumn using one of 
+    the tf.feature_column.categorical_column* functions.
+
+    If you know the set of all possible feature values of a column—and there are only a few of 
+    them — use categorical_column_with_vocabulary_list. Each key in the list is assigned an 
+    auto-incremented ID starting from 0. For example, for the relationship column we can assign 
+    the feature string Husband to an integer ID of 0 and "Not-in-family" to 1, etc.
+'''
+relationship = fc.categorical_column_with_vocabulary_list(
+    'relationship',
+    ['Husband', 'Not-in-family', 'Wife', 'Own-child', 'Unmarried', 'Other-relative'])
+
+'''
+    This creates a sparse one-hot vector from the raw input feature.
+
+    The input_layer function we're using is designed for DNN models and expects dense inputs. 
+    To demonstrate the categorical column we must wrap it in a tf.feature_column.indicator_column 
+    to create the dense one-hot output (Linear Estimators can often skip this dense-step).
+
+    indicator_column - https://www.tensorflow.org/api_docs/python/tf/feature_column/indicator_column
+
+    NOTE: the other sparse-to-dense option is tf.feature_column.embedding_column.
+
+    embedding_column - https://www.tensorflow.org/api_docs/python/tf/feature_column/embedding_column
+
+    Run the input layer, configured with both the age and relationship columns:
+'''
+print(fc.input_layer(feature_batch, [age, fc.indicator_column(relationship)]))
+'''
+    <tf.Tensor: id=5100, shape=(10, 7), dtype=float32, numpy=
+        array([[35.,  0.,  0.,  0.,  1.,  0.,  0.],
+                [48.,  1.,  0.,  0.,  0.,  0.,  0.],
+                ...
+                [46.,  1.,  0.,  0.,  0.,  0.,  0.],
+                [44.,  0.,  0.,  1.,  0.,  0.,  0.]], dtype=float32)>
+
+    If we don't know the set of possible values in advance, use the categorical_column_with_hash_bucket 
+    instead:
+'''
+occupation = tf.feature_column.categorical_column_with_hash_bucket('occupation', hash_bucket_size=1000)
+
+'''
+    Here, each possible value in the feature column occupation is hashed to an integer ID as we 
+    encounter them in training. The example batch has a few different occupations:
+'''
+for item in feature_batch['occupation'].numpy():
+    print(item.decode())
+
+'''
+    Prof-specialty
+    Machine-op-inspct
+    Sales
+    Craft-repair
+    Craft-repair
+    Sales
+    Prof-specialty
+    Prof-specialty
+    Other-service
+    Prof-specialty
+
+    If we run input_layer with the hashed column, we see that the output shape is 
+    (batch_size, hash_bucket_size):
+'''
+occupation_result = fc.input_layer(feature_batch, [fc.indicator_column(occupation)])
+
+print(occupation_result.numpy().shape)
+'''
+    (10, 1000)
+
+    It's easier to see the actual results if we take the tf.argmax over the hash_bucket_size dimension. 
+    Notice how any duplicate occupations are mapped to the same pseudo-random index:
+'''
+print(tf.argmax(occupation_result, axis=1).numpy())
+'''
+    array([979, 911, 631, 466, 466, 631, 979, 979, 527, 979])
+
+    NOTE: Hash collisions are unavoidable, but often have minimal impact on model quality. 
+          The effect may be noticable if the hash buckets are being used to compress the input space. 
+          See this notebook for a more visual example of the effect of these hash collisions.
+
+          https://colab.research.google.com/github/tensorflow/models/blob/master/samples/outreach/blogs/housing_prices.ipynb
+
+    No matter how we choose to define a SparseColumn, each feature string is mapped into an integer ID by 
+    looking up a fixed mapping or by hashing. Under the hood, the LinearModel class is responsible for 
+    managing the mapping and creating tf.Variable to store the model parameters (model weights) for each 
+    feature ID. The model parameters are learned through the model training process described later.
+
+        tf.Variable - https://www.tensorflow.org/api_docs/python/tf/Variable
+
+    Let's do the similar trick to define the other categorical features:
+'''
+
+
+
+#endregion - Categorical columns
+
 #endregion - Base Feature Columns
 
 
