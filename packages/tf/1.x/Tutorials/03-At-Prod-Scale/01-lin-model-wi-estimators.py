@@ -63,8 +63,10 @@ tf.enable_eager_execution()             # https://www.tensorflow.org/guide/eager
 '''
 models_path = os.path.join(os.getcwd(), 'models')
 print(f"models_path: {models_path}")
+print(f"sys.path: {sys.path}")
 
 sys.path.append(models_path)
+print(f"sys.path: {sys.path}")
 
 '''
     Download the dataset
@@ -502,12 +504,79 @@ print(tf.argmax(occupation_result, axis=1).numpy())
 
     Let's do the similar trick to define the other categorical features:
 '''
+education = tf.feature_column.categorical_column_with_vocabulary_list(
+    'education', [
+        'Bachelors', 'HS-grad', '11th', 'Masters', '9th', 'Some-college',
+        'Assoc-acdm', 'Assoc-voc', '7th-8th', 'Doctorate', 'Prof-school',
+        '5th-6th', '10th', '1st-4th', 'Preschool', '12th'])
+
+marital_status = tf.feature_column.categorical_column_with_vocabulary_list(
+    'marital_status', [
+        'Married-civ-spouse', 'Divorced', 'Married-spouse-absent',
+        'Never-married', 'Separated', 'Married-AF-spouse', 'Widowed'])
+
+workclass = tf.feature_column.categorical_column_with_vocabulary_list(
+    'workclass', [
+        'Self-emp-not-inc', 'Private', 'State-gov', 'Federal-gov',
+        'Local-gov', '?', 'Self-emp-inc', 'Without-pay', 'Never-worked'])
 
 
+my_categorical_columns = [relationship, occupation, education, marital_status, workclass]
 
+'''
+    It's easy to use both sets of columns to configure a model that uses all these features:
+'''
+classifier = tf.estimator.LinearClassifier(feature_columns=my_numeric_columns+my_categorical_columns)
+classifier.train(train_inpf)
+result = classifier.evaluate(test_inpf)
+
+clear_output()
+
+for key,value in sorted(result.items()):
+    print('%s: %s' % (key, value))
+'''
+    accuracy: 0.8335483
+    accuracy_baseline: 0.76377374
+    auc: 0.8860394
+    auc_precision_recall: 0.70089626
+    average_loss: 0.4497595
+    global_step: 1018
+    label/mean: 0.23622628
+    loss: 28.715822
+    precision: 0.65130526
+    prediction/mean: 0.25957206
+    recall: 0.63572544
+'''
 #endregion - Categorical columns
-
 #endregion - Base Feature Columns
+
+#region Derived feature columns
+'''
+    Derived feature columns
+    https://www.tensorflow.org/tutorials/estimators/linear#derived_feature_columns
+'''
+#region Make Continuous Features Categorical through Bucketization
+'''
+    Make Continuous Features Categorical through Bucketization
+    https://www.tensorflow.org/tutorials/estimators/linear#make_continuous_features_categorical_through_bucketization
+
+    Sometimes the relationship between a continuous feature and the label is not linear. For example, age and income — a 
+    person's income may grow in the early stage of their career, then the growth may slow at some point, and finally, 
+    the income decreases after retirement. In this scenario, using the raw age as a real-valued feature column might not 
+    be a good choice because the model can only learn one of the three cases:
+
+        1. Income always increases at some rate as age grows (positive correlation),
+        2. Income always decreases at some rate as age grows (negative correlation), or
+        3. Income stays the same no matter at what age (no correlation).
+
+    If we want to learn the fine-grained correlation between income and each age group separately, we can leverage 
+    bucketization. Bucketization is a process of dividing the entire range of a continuous feature into a set of 
+    consecutive buckets, and then converting the original numerical feature into a bucket ID (as a categorical feature) 
+    depending on which bucket that value falls into. So, we can define a bucketized_column over age as:
+'''
+#endregion - Make Continuous Features Categorical through Bucketization
+
+#endregion - Derived feature columns
 
 
 
