@@ -574,6 +574,19 @@ for key,value in sorted(result.items()):
     consecutive buckets, and then converting the original numerical feature into a bucket ID (as a categorical feature) 
     depending on which bucket that value falls into. So, we can define a bucketized_column over age as:
 '''
+age_buckets = tf.feature_column.bucketized_column(
+    age, boundaries=[18, 25, 30, 35, 40, 45, 50, 55, 60, 65])
+'''
+    boundaries is a list of bucket boundaries. In this case, there are 10 boundaries, resulting in 11 age group 
+    buckets (from age 17 and below, 18-24, 25-29, ..., to 65 and over).
+
+    With bucketing, the model sees each bucket as a one-hot feature:
+'''
+print(fc.input_layer(feature_batch, [age, age_buckets]).numpy())
+
+
+
+
 #endregion - Make Continuous Features Categorical through Bucketization
 
 #endregion - Derived feature columns
