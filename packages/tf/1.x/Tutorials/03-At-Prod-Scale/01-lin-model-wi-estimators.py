@@ -287,6 +287,23 @@ import functools
 train_inpf = functools.partial(census_dataset.input_fn, train_file, num_epochs=2, shuffle=True, batch_size=64)
 test_inpf = functools.partial(census_dataset.input_fn, test_file, num_epochs=1, shuffle=False, batch_size=64)
 
+'''
+    NOTES:
+    
+    functools - https://docs.python.org/3/library/functools.html
+    A module is for higher-order functions: functions that act on or return other functions
+
+    partial - used for partial function application which “freezes” some portion of a function’s arguments 
+              and/or keywords resulting in a new object with a simplified signature. For example, partial() 
+              can be used to create a callable that behaves like the int() function where the base argument 
+              defaults to two:
+                  
+                    >>> from functools import partial
+                    >>> basetwo = partial(int, base=2)
+                    >>> basetwo.__doc__ = 'Convert base 2 string to an int.'
+                    >>> basetwo('10010')
+'''
+
 #endregion - Converting Data into Tensors
 
 #region Selecting and Engineering Features for the Model
@@ -583,14 +600,192 @@ age_buckets = tf.feature_column.bucketized_column(
     With bucketing, the model sees each bucket as a one-hot feature:
 '''
 print(fc.input_layer(feature_batch, [age, age_buckets]).numpy())
-
-
-
-
+'''
+    array([[35.,  0.,  0.,  0.,  0.,  1.,  0.,  0.,  0.,  0.,  0.,  0.],
+        [48.,  0.,  0.,  0.,  0.,  0.,  0.,  1.,  0.,  0.,  0.,  0.],
+        ...
+        [44.,  0.,  0.,  0.,  0.,  0.,  1.,  0.,  0.,  0.,  0.,  0.]],
+        dtype=float32)
+'''
 #endregion - Make Continuous Features Categorical through Bucketization
 
+#region Learn complex relationships with crossed column
+'''
+    Learn complex relationships with crossed column
+    https://www.tensorflow.org/tutorials/estimators/linear#learn_complex_relationships_with_crossed_column
+
+    Using each base feature column separately may not be enough to explain the data. For example, the 
+    correlation between education and the label (earning > 50,000 dollars) may be different for different 
+    occupations. Therefore, if we only learn a single model weight for education="Bachelors" and 
+    education="Masters", we won't capture every education-occupation combination (e.g. distinguishing between 
+    education="Bachelors" AND occupation="Exec-managerial" AND education="Bachelors" AND occupation="Craft-repair").
+
+    To learn the differences between different feature combinations, we can add crossed feature columns to the model:
+'''
+education_x_occupation = tf.feature_column.crossed_column(
+    ['education', 'occupation'], hash_bucket_size=1000)
+
+'''
+    We can also create a crossed_column over more than two columns. Each constituent column can be either a base 
+    feature column that is categorical (SparseColumn), a bucketized real-valued feature column, or even another 
+    CrossColumn. For example:
+'''
+age_buckets_x_education_x_occupation = tf.feature_column.crossed_column(
+    [age_buckets, 'education', 'occupation'], hash_bucket_size=1000)
+
+'''
+    These crossed columns always use hash buckets to avoid the exponential explosion in the number of categories, 
+    and put the control over number of model weights in the hands of the user.
+
+    For a visual example the effect of hash-buckets with crossed columns see
+    https://colab.research.google.com/github/tensorflow/models/blob/master/samples/outreach/blogs/housing_prices.ipynb
+'''
+
+#endregion - Learn complex relationships with crossed column
 #endregion - Derived feature columns
-
-
-
 #endregion - Selecting and Engineering Features for the Model
+
+#region Define the logistic regression model
+'''
+    Define the logistic regression model
+    https://www.tensorflow.org/tutorials/estimators/linear#define_the_logistic_regression_model
+
+    After processing the input data and defining all the feature columns, we can put them together and build a logistic 
+    regression model. The previous section showed several types of base and derived feature columns, including:
+
+        - CategoricalColumn
+        - NumericColumn
+        - BucketizedColumn
+        - CrossedColumn
+
+    All of these are subclasses of the abstract FeatureColumn class and can be added to the feature_columns field of 
+    a model:
+'''
+import tempfile
+
+base_columns = [
+    education, marital_status, relationship, workclass, occupation,
+    age_buckets,
+]
+
+crossed_columns = [
+    tf.feature_column.crossed_column(
+        ['education', 'occupation'], hash_bucket_size=1000),
+    tf.feature_column.crossed_column(
+        [age_buckets, 'education', 'occupation'], hash_bucket_size=1000),
+]
+
+model = tf.estimator.LinearClassifier(
+    model_dir=tempfile.mkdtemp(),
+    feature_columns=base_columns + crossed_columns,
+    optimizer=tf.train.FtrlOptimizer(learning_rate=0.1))
+
+'''
+    The model automatically learns a bias term, which controls the prediction made without observing any 
+    features. The learned model files are stored in model_dir.
+'''
+#endregion - Define the logistic regression model
+
+#region Train and evaluate the model
+'''
+    Train and evaluate the model
+    https://www.tensorflow.org/tutorials/estimators/linear#train_and_evaluate_the_model
+
+    After adding all the features to the model, let's train the model. Training a model is just a single 
+    command using the tf.estimator API:
+
+    tf.estimator - https://www.tensorflow.org/api_docs/python/tf/estimator
+'''
+train_inpf = functools.partial(census_dataset.input_fn, train_file,
+                               num_epochs=40, shuffle=True, batch_size=64)
+
+model.train(train_inpf)
+
+clear_output()  # used for notebook display
+
+'''
+    After the model is trained, evaluate the accuracy of the model by predicting the labels of the 
+    holdout data:
+'''
+results = model.evaluate(test_inpf)
+
+clear_output()
+
+for key,value in sorted(results.items()):
+    print('%s: %0.2f' % (key, value))
+'''
+    accuracy: 0.83
+    accuracy_baseline: 0.76
+    auc: 0.88
+    auc_precision_recall: 0.69
+    average_loss: 0.35
+    global_step: 20351.00
+    label/mean: 0.24
+    loss: 22.64
+    precision: 0.68
+    prediction/mean: 0.24
+    recall: 0.56
+
+    The first line of the output should display something like: accuracy: 0.84, which means the accuracy 
+    is 84%. You can try using more features and transformations to see if you can do better!
+
+    After the model is evaluated, we can use it to predict whether an individual has an annual income 
+    of over 50,000 dollars given an individual's information input.
+
+    Let's look in more detail how the model performed:
+'''
+import numpy as np
+
+predict_df = test_df[:20].copy()
+
+pred_iter = model.predict(
+    lambda:easy_input_function(predict_df, label_key='income_bracket',
+                               num_epochs=1, shuffle=False, batch_size=10))
+
+classes = np.array(['<=50K', '>50K'])
+pred_class_id = []
+
+for pred_dict in pred_iter:
+    pred_class_id.append(pred_dict['class_ids'])
+
+predict_df['predicted_class'] = classes[np.array(pred_class_id)]
+predict_df['correct'] = predict_df['predicted_class'] == predict_df['income_bracket']
+
+clear_output()
+
+print(predict_df[['income_bracket','predicted_class', 'correct']])
+
+'''
+    For a working end-to-end example, download our example code and set the model_type flag to wide
+
+    https://github.com/tensorflow/models/tree/master/official/wide_deep/census_main.py
+'''
+#endregion - Train and evaluate the model
+
+#region Adding Regularization to Prevent Overfitting
+'''
+Adding Regularization to Prevent Overfitting
+https://www.tensorflow.org/tutorials/estimators/linear#adding_regularization_to_prevent_overfitting
+
+Regularization is a technique used to avoid overfitting. Overfitting happens when a model performs well 
+on the data it is trained on, but worse on test data that the model has not seen before. Overfitting can 
+occur when a model is excessively complex, such as having too many parameters relative to the number of 
+observed training data. Regularization allows you to control the model's complexity and make the model 
+more generalizable to unseen data.
+
+You can add L1 and L2 regularizations to the model with the following code:
+'''
+model_l1 = tf.estimator.LinearClassifier(feature_columns=base_columns + crossed_columns,
+                                         optimizer=tf.train.FtrlOptimizer(
+                                             learning_rate=0.1,
+                                             l1_regularization_strength=10.0,
+                                             l2_regularization_strength=0.0))
+
+model_l1.train(train_inpf)
+
+results = model_l1.evaluate(test_inpf)
+clear_output()
+for key in sorted(results):
+  print('%s: %0.2f' % (key, results[key]))
+
+#endregion - Adding Regularization to Prevent Overfitting
