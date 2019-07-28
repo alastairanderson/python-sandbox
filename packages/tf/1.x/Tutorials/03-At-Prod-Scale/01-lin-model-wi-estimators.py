@@ -230,6 +230,12 @@ import inspect
 print(inspect.getsource(census_dataset.input_fn))
 
 '''
+    NOTES:
+    inspect - https://docs.python.org/3/library/inspect.html
+            - get information about live objects such as modules, classes, methods, functions, 
+              tracebacks, frame objects, and code objects
+
+
     def input_fn(data_file, num_epochs, shuffle, batch_size):
         """Generate an input function for the Estimator."""
         assert tf.gfile.Exists(data_file), (
@@ -660,6 +666,10 @@ age_buckets_x_education_x_occupation = tf.feature_column.crossed_column(
 
     All of these are subclasses of the abstract FeatureColumn class and can be added to the feature_columns field of 
     a model:
+
+    NOTES:
+        tempfile - https://docs.python.org/3/library/tempfile.html
+                 - creates temporary files and directories
 '''
 import tempfile
 
@@ -786,6 +796,101 @@ model_l1.train(train_inpf)
 results = model_l1.evaluate(test_inpf)
 clear_output()
 for key in sorted(results):
-  print('%s: %0.2f' % (key, results[key]))
+    print('%s: %0.2f' % (key, results[key]))
+
+'''
+    accuracy: 0.84
+    accuracy_baseline: 0.76
+    auc: 0.88
+    auc_precision_recall: 0.69
+    average_loss: 0.35
+    global_step: 20351.00
+    label/mean: 0.24
+    loss: 22.47
+    precision: 0.69
+    prediction/mean: 0.24
+    recall: 0.55
+'''
+model_l2 = tf.estimator.LinearClassifier(
+    feature_columns=base_columns + crossed_columns,
+    optimizer=tf.train.FtrlOptimizer(
+        learning_rate=0.1,
+        l1_regularization_strength=0.0,
+        l2_regularization_strength=10.0))
+
+model_l2.train(train_inpf)
+
+results = model_l2.evaluate(test_inpf)
+clear_output()
+for key in sorted(results):
+    print('%s: %0.2f' % (key, results[key]))
+
+'''
+    accuracy: 0.84
+    accuracy_baseline: 0.76
+    auc: 0.88
+    auc_precision_recall: 0.69
+    average_loss: 0.35
+    global_step: 20351.00
+    label/mean: 0.24
+    loss: 22.46
+    precision: 0.69
+    prediction/mean: 0.24
+    recall: 0.55
+
+    These regularized models don't perform much better than the base model. Let's look at the model's 
+    weight distributions to better see the effect of the regularization:
+'''
+def get_flat_weights(model):
+    weight_names = [name for name in model.get_variable_names()
+                    if "linear_model" in name and "Ftrl" not in name]
+
+    weight_values = [model.get_variable_value(name) for name in weight_names]
+
+    weights_flat = np.concatenate([item.flatten() for item in weight_values], axis=0)
+
+    return weights_flat
+
+weights_flat = get_flat_weights(model)
+weights_flat_l1 = get_flat_weights(model_l1)
+weights_flat_l2 = get_flat_weights(model_l2)
+
+'''
+    The models have many zero-valued weights caused by unused hash bins (there are many more hash bins than 
+    categories in some columns). We can mask these weights when viewing the weight distributions:
+'''
+weight_mask = weights_flat != 0
+
+weights_base = weights_flat[weight_mask]
+weights_l1 = weights_flat_l1[weight_mask]
+weights_l2 = weights_flat_l2[weight_mask]
+
+'''
+    Now plot the distributions:
+'''
+plt.figure()
+_ = plt.hist(weights_base, bins=np.linspace(-3,3,30))
+plt.title('Base Model')
+plt.ylim([0,500])
+plt.show()
+
+plt.figure()
+_ = plt.hist(weights_l1, bins=np.linspace(-3,3,30))
+plt.title('L1 - Regularization')
+plt.ylim([0,500])
+plt.show()
+
+plt.figure()
+_ = plt.hist(weights_l2, bins=np.linspace(-3,3,30))
+plt.title('L2 - Regularization')
+_=plt.ylim([0,500])
+plt.show()
+
+'''
+    Both types of regularization squeeze the distribution of weights towards zero. L2 regularization 
+    has a greater effect in the tails of the distribution eliminating extreme weights. L1 regularization 
+    produces more exactly-zero values, in this case it sets ~200 to zero.
+'''
+
 
 #endregion - Adding Regularization to Prevent Overfitting
