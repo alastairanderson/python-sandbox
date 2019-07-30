@@ -47,15 +47,31 @@ COMMENT
 
 <<RUNNINGTHECODE
     Running the code
-    https://github.com/tensorflow/models/tree/master/official/wide_deep#running-the-code
+    ----------------
 
-    First make sure you've added the models folder to your Python path; otherwise you may encounter an 
-    error like 
+        First make sure you've added the models folder to your Python path; otherwise you may encounter an 
+        error like 
+            
+            ImportError: No module named official.wide_deep.
+
+        https://github.com/tensorflow/models/blob/master/official/#running-the-models
+
+    Setup
+    -----
+
+        The Census Income Data Set that this sample uses for training is hosted by the UC Irvine Machine Learning 
+        Repository. We have provided a script that downloads and cleans the necessary files.
+
+        Census Income Data Set - https://archive.ics.uci.edu/ml/datasets/Census+Income
+        UC Irvine Machine Learning Repository - https://archive.ics.uci.edu/ml/datasets/
+
+            $ python census_dataset.py
+
+        This will download the files to /tmp/census_data. To change the directory, set the --data_dir flag.
+    
+    Training
+    --------
+
         
-        ImportError: No module named official.wide_deep.
-
-    https://github.com/tensorflow/models/blob/master/official/#running-the-models
-
-
 
 RUNNINGTHECODE
