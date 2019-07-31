@@ -56,6 +56,9 @@ COMMENT
 
         https://github.com/tensorflow/models/blob/master/official/#running-the-models
 
+        Note: Alternatively, if running from the command line, you can just navigate to the models directory
+        and run the scripts from there ./models/official/wide_deep
+
     Setup
     -----
 
@@ -72,6 +75,35 @@ COMMENT
     Training
     --------
 
-        
+        You can run the code locally as follows:
+
+            $ python census_main.py
+
+        The model is saved to /tmp/census_model by default, which can be changed using the --model_dir flag.
+
+        To run the wide or deep-only models, set the --model_type flag to wide or deep. Other flags are 
+        configurable as well; see census_main.py for details.
+
+        The final accuracy should be over 83% with any of the three model types.
+
+        You can also experiment with -inter and -intra flag to explore inter/intra op parallelism for 
+        potential better performance as follows:
+
+            $ python census_main.py --inter=<int> --intra=<int>
+
+        Note the above optional inter/intra op does not affect model accuracy. These are TensorFlow 
+        framework configurations that only affect execution time. 
+
+    TensorBoard
+
+        Run TensorBoard to inspect the details about the graph and training progression.
+
+            tensorboard --logdir=/tmp/census_model --host localhost --port 8088
+
 
 RUNNINGTHECODE
+
+
+<<INFERENCE_WITH_SAVEDMODEL
+
+INFERENCE_WITH_SAVEDMODEL
