@@ -1,4 +1,4 @@
-<<COMMENT
+<<INTRO
     Predicting Income with the Census Income Dataset
     https://github.com/tensorflow/models/tree/master/official/wide_deep
 
@@ -43,9 +43,9 @@
     The Estimator and Dataset APIs are both highly encouraged for fast development and efficient 
     training.
 
-COMMENT
+INTRO
 
-<<RUNNINGTHECODE
+<<RUNNING_THE_CODE
     Running the code
     ----------------
 
@@ -101,9 +101,13 @@ COMMENT
             tensorboard --logdir=/tmp/census_model --host localhost --port 8088
 
 
-RUNNINGTHECODE
-
+RUNNING_THE_CODE
 
 <<INFERENCE_WITH_SAVEDMODEL
+
+    You can export the model into Tensorflow SavedModel format by using the argument --export_dir:
+    https://www.tensorflow.org/guide/saved_model
+
+        python census_main.py --export_dir /tmp/wide_deep_saved_model
 
 INFERENCE_WITH_SAVEDMODEL
