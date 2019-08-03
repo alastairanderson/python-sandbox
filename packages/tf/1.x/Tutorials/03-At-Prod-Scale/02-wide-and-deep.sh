@@ -120,8 +120,7 @@ RUNNING_THE_CODE
             $ saved_model_cli show --dir /tmp/wide_deep_saved_model/${TIMESTAMP}/
 
             # Show SignatureDefs for tag_set=serve. SignatureDefs define the outputs to show.
-            $ saved_model_cli show --dir /tmp/wide_deep_saved_model/${TIMESTAMP}/ \
-              --tag_set serve --all
+            $ saved_model_cli show --dir /tmp/wide_deep_saved_model/${TIMESTAMP} --tag_set serve --all
 
     Inference
 
@@ -132,7 +131,5 @@ RUNNING_THE_CODE
                 --input_examples='examples=[{"age":[46.], "education_num":[10.], "capital_gain":[7688.], "capital_loss":[0.], "hours_per_week":[38.]}, {"age":[24.], "education_num":[13.], "capital_gain":[0.], "capital_loss":[0.], "hours_per_week":[50.]}]'
 
         This will print out the predicted classes and class probabilities. Class 0 is the <=50k group and 1 is the >50k group.
-
-        
 
 INFERENCE_WITH_SAVEDMODEL
