@@ -1,0 +1,13 @@
+[] Investigate + Understand uses for Spare Tensors 
+https://www.tensorflow.org/api_docs/python/tf/sparse/SparseTensor
+
+[] Create our own mini-wiki around key code snippets that we want to uses
+
+[] Ensure we understand everything here
+https://www.tensorflow.org/guide/tensors
+
+[] Understand the different hardware options for training 
+https://cloud.google.com/tpu/docs/beginners-guide
+
+Read this from an environment variable
+API_KEY = 'ryKLxaSSXe41u8EFoVnh'
