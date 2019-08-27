@@ -5,7 +5,8 @@ https://colab.research.google.com/github/tensorflow/docs/blob/master/site/en/tut
 requirements.txt
 tensorflow==2.0.0-rc0
 
-Note: ERROR: tb-nightly 1.15.0a20190806 has requirement setuptools>=41.0.0, but you'll have setuptools 40.8.0 which is incompatible.
+Note 1: Check https://github.com/tensorflow/tensorflow/releases for latest releases 
+Note 2: 2.0.0-rc0 ERROR: tb-nightly 1.15.0a20190806 has requirement setuptools>=41.0.0, but you'll have setuptools 40.8.0 which is incompatible.
 
 pip install --upgrade setuptools==41.0.0
 '''
