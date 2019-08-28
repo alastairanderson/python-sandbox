@@ -93,10 +93,16 @@ for i in range(25):
 
 
 '''
+Setup the layers
+
 Define the layers of a NN, going from top-to-bottom is the equivalent of looking at a diagram 
 going from left-to-right
 
+Flatten - transforms the image from 28x28 2d array into a 1d 784 element array
+Dense   - 
 
+relu    - 
+softmax - 
 '''
 model = keras.Sequential([
     keras.layers.Flatten(input_shape=(28, 28)),
