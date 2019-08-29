@@ -75,7 +75,7 @@ train_images = train_images / 255.0
 test_images = test_images / 255.0
 
 '''
-Verify the data is in the correct format after the scaling
+Verify the data is in the correct format after the scaling by plotting some samples.
 '''
 plt.figure(figsize=(10,10))
 for i in range(25):
@@ -90,8 +90,6 @@ for i in range(25):
 #endregion - Prepare the data
 
 #region Build the model
-
-
 '''
 Setup the layers
 
@@ -99,10 +97,18 @@ Define the layers of a NN, going from top-to-bottom is the equivalent of looking
 going from left-to-right
 
 Flatten - transforms the image from 28x28 2d array into a 1d 784 element array
-Dense   - 
+Dense   - densely/fully connected layers
+        - implements: output = activation(dot(input, kernel) + bias) with activation passed by name
+Activations
+    relu    
+        - implementation of the Rectified Linear Units
+        - https://machinelearningmastery.com/rectified-linear-activation-function-for-deep-learning-neural-networks/
+    softmax 
+        - the output 'squashes' the input down to give a probability of which class (class_names) the input is.
 
-relu    - 
-softmax - 
+Activatiosn: https://www.tensorflow.org/api_docs/python/tf/keras/activations
+Note 1: Leaky ReLU isn't in the list
+Note 2: This points at version 1.14, need to check for 2.x
 '''
 model = keras.Sequential([
     keras.layers.Flatten(input_shape=(28, 28)),
