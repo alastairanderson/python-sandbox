@@ -115,3 +115,6 @@ dmypy.json
 
 # additional
 MNIST_data/
+
+sandbox/ps-fundamentals
+.DS_Store

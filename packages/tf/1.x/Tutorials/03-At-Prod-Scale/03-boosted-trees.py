@@ -13,3 +13,14 @@
     Boosted Trees models are popular with many machine learning practioners as they can achieve impressive performance 
     with minimal hyperparameter tuning.
 '''
+
+
+'''
+Still to cover
+
+    TensorBoard: Visualizing Learning
+    https://www.tensorflow.org/guide/summaries_and_tensorboard
+
+    Guide - Estimators
+    https://www.tensorflow.org/guide/estimators
+'''

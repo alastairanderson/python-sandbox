@@ -106,9 +106,10 @@ Activations
     softmax 
         - the output 'squashes' the input down to give a probability of which class (class_names) the input is.
 
-Activatiosn: https://www.tensorflow.org/api_docs/python/tf/keras/activations
-Note 1: Leaky ReLU isn't in the list
-Note 2: This points at version 1.14, need to check for 2.x
+    https://www.tensorflow.org/api_docs/python/tf/keras/activations
+
+    Note 1: Leaky ReLU isn't in the list
+    Note 2: This points at version 1.14, need to check for 2.x
 '''
 model = keras.Sequential([
     keras.layers.Flatten(input_shape=(28, 28)),
